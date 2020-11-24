@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SpotNetCore.Implementation;
 
 namespace SpotNetCore
 {
@@ -9,18 +10,19 @@ namespace SpotNetCore
         public static void Main(string[] args)
         {
             var serviceProvider = new ServiceCollection()
-                //.AddSingleton<SomethingService>()
+                .AddSingleton<AuthorisationService>()
                 .AddLogging(logging =>
                 {
                     logging.AddConsole();
                 })
                 .BuildServiceProvider();
 
-            var logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<Program>();
+            var codeDetails = serviceProvider.GetService<AuthorisationService>().Authorise();
             
-            logger.LogDebug("AAAAAAA something happened");
-
-            Console.WriteLine("test");
+            Console.WriteLine(codeDetails.CodeChallenge);
+            Console.WriteLine(codeDetails.CodeVerifier);
+            Console.WriteLine(codeDetails.AuthorisationUri);
+            
             Console.ReadLine();
         }
     }

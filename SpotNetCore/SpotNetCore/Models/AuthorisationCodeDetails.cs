@@ -15,6 +15,7 @@ namespace SpotNetCore.Models
         
         public string CodeVerifier { get; }
         public string CodeChallenge { get; }
+        public string AuthorisationUri { get; set; }
 
         private static string CreateCodeVerifier()
         {

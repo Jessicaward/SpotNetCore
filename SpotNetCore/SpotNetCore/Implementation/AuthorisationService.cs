@@ -1,18 +1,28 @@
 using System;
 using Microsoft.Extensions.Logging;
+using SpotNetCore.Models;
 
 namespace SpotNetCore.Implementation
 {
-    public class AuthorisationManager
+    public class AuthorisationService
     {
-        private readonly ILogger<AuthorisationManager> _logger;
+        private readonly ILogger<AuthorisationService> _logger;
 
-        public AuthorisationManager(ILogger<AuthorisationManager> logger)
+        public AuthorisationService(ILogger<AuthorisationService> logger)
         {
             _logger = logger;
         }
 
-        private string BuildAuthorisationUri(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
+        public AuthorisationCodeDetails Authorise()
+        {
+            var details = new AuthorisationCodeDetails();
+
+            details.AuthorisationUri = BuildAuthorisationUri("test", "test", details.CodeChallenge, "S256", "something something");
+            
+            return details;
+        }
+
+        private static string BuildAuthorisationUri(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
         {
             return new UriBuilder()
             {
@@ -27,7 +37,7 @@ namespace SpotNetCore.Implementation
         {
             return Uri.EscapeUriString("?client_id=" + clientId + "&response_type=code" 
                    + "&redirect_uri=" + redirectUri + "&code_challenge_method=S256"
-                   + "&code_challenge= " + codeChallenge + "&state=" + state + "&scope=" + scopes);
+                   + "&code_challenge=" + codeChallenge + "&state=" + state + "&scope=" + scopes);
         }
     }
 }
