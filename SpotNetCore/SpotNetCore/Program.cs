@@ -1,31 +1,47 @@
 ﻿using System;
-using System.Net;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SpotNetCore.Implementation;
 
 namespace SpotNetCore
 {
     class Program
     {
-        private static IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
+
+        public Program(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
         
         public static void Main(string[] args)
         {
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton<AuthorisationService>()
-                .AddLogging(logging =>
-                {
-                    logging.AddConsole();
-                })
-                .BuildServiceProvider();
-
-            _serviceProvider = serviceProvider;
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseStartup<Startup>()
+                .UseUrls("http://localhost:5001/")
+                .Configure(c =>
+                    c.Run(a =>
+                        {
+                            Console.WriteLine("writing response");
+                            return a.Response.WriteAsync("Hello world");
+                        }
+                    )
+                )
+                .Build();
+            
+            host.Start();
+            
+            Console.WriteLine("Host setup finished, continuing with program.");
+            Console.ReadLine();
         }
 
-        private static async Task<string> Authenticate()
+        private async Task<string> Authenticate()
         {
             using (var httpClient = new HttpClient())
             {
