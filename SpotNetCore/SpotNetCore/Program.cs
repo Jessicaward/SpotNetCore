@@ -11,7 +11,6 @@ namespace SpotNetCore
     class Program
     {
         private static IServiceProvider _serviceProvider;
-        private static HttpListener _httpListener;
         
         public static void Main(string[] args)
         {
@@ -24,17 +23,10 @@ namespace SpotNetCore
                 .BuildServiceProvider();
 
             _serviceProvider = serviceProvider;
-
-            Authenticate();
-
-            Console.ReadLine();
         }
 
         private static async Task<string> Authenticate()
         {
-            var nonBlockingHttpListener = new NonBlockingHttpListener(5);
-            nonBlockingHttpListener.Start(12345);
-            
             using (var httpClient = new HttpClient())
             {
                 var codeDetails = _serviceProvider.GetService<AuthorisationService>().Authorise();
