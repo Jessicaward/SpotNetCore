@@ -1,5 +1,11 @@
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SpotNetCore.Models;
 
@@ -14,11 +20,33 @@ namespace SpotNetCore.Implementation
             _logger = logger;
         }
 
-        public AuthorisationCodeDetails Authorise()
+        public async Task<AuthorisationCodeDetails> Authorise()
         {
-            var details = new AuthorisationCodeDetails();
-
+            var details = new AuthorisationCodeDetails
+            {
+                RedirectUri = "https://localhost:5001/"
+            };
             details.AuthorisationUri = BuildAuthorisationUri("test", "test", details.CodeChallenge, "S256", "something something");
+            
+            await WebHost.CreateDefaultBuilder(null)
+                .Configure(y =>
+                {
+                    y.UseRouting();
+                    y.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapGet("/", async context =>
+                        {
+                            Console.WriteLine("endpoint received response");
+                            await context.Response.WriteAsync("Hello world");
+                        });
+                    });
+                }).Build().RunAsync();
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetAsync(details.AuthorisationUri);
+                
+            }
             
             return details;
         }
