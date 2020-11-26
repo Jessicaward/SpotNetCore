@@ -1,4 +1,5 @@
 ﻿using System;
+using SpotNetCore.Implementation;
 
 namespace SpotNetCore
 {
@@ -13,7 +14,8 @@ namespace SpotNetCore
         
         public static void Main(string[] args)
         {
-            Console.WriteLine("Authorising");
+            var authService = new AuthorisationService();
+            var token = authService.Authorise().Result;
             Console.ReadLine();
         }
     }

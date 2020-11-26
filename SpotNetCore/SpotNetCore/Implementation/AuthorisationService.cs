@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore;
@@ -13,22 +14,18 @@ namespace SpotNetCore.Implementation
 {
     public class AuthorisationService
     {
-        private readonly ILogger<AuthorisationService> _logger;
-
-        public AuthorisationService(ILogger<AuthorisationService> logger)
+        public async Task<SpotifyAccessToken> Authorise()
         {
-            _logger = logger;
-        }
-
-        public async Task<AuthorisationCodeDetails> Authorise()
-        {
+            var spotifyAccessToken = (SpotifyAccessToken)null;
             var details = new AuthorisationCodeDetails
             {
                 RedirectUri = "https://localhost:5001/"
             };
-            details.AuthorisationUri = BuildAuthorisationUri("test", "test", details.CodeChallenge, "S256", "something something");
             
-            await WebHost.CreateDefaultBuilder(null)
+            //todo: move this info into config
+            details.AuthorisationUri = BuildAuthorisationUri("33bea7a309d24a08a71ff9c8f48be287", details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", "user-follow-modify");
+            
+            WebHost.CreateDefaultBuilder(null)
                 .Configure(y =>
                 {
                     y.UseRouting();
@@ -36,8 +33,9 @@ namespace SpotNetCore.Implementation
                     {
                         endpoints.MapGet("/", async context =>
                         {
-                            Console.WriteLine("endpoint received response");
-                            await context.Response.WriteAsync("Hello world");
+                            await context.Response.WriteAsync("");
+                            Console.WriteLine("Endpoint hit");
+                            spotifyAccessToken = new SpotifyAccessToken();
                         });
                     });
                 }).Build().RunAsync();
@@ -45,10 +43,16 @@ namespace SpotNetCore.Implementation
             using (var httpClient = new HttpClient())
             {
                 var response = await httpClient.GetAsync(details.AuthorisationUri);
-                
+                Console.WriteLine("HTTP Request sent");
+            }
+
+            while (spotifyAccessToken == null)
+            {
+                //todo: there has to be a better way of doing this?
+                await Task.Delay(250);
             }
             
-            return details;
+            return spotifyAccessToken;
         }
 
         private static string BuildAuthorisationUri(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
