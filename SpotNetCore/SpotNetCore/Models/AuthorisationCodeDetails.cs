@@ -6,19 +6,19 @@ namespace SpotNetCore.Models
 {
     public class AuthorisationCodeDetails
     {
-        public AuthorisationCodeDetails()
+        public AuthorisationCodeDetails(string verifier, string redirectUri)
         {
-            var verifier = CreateCodeVerifier();
+            RedirectUri = redirectUri;
             CodeVerifier = verifier;
             CodeChallenge = CreateCodeChallenge(verifier);
         }
         
-        public string CodeVerifier { get; }
+        public string CodeVerifier { get; set; }
         public string CodeChallenge { get; }
         public string AuthorisationUri { get; set; }
         public string RedirectUri { get; set; }
 
-        private static string CreateCodeVerifier()
+        public static string CreateCodeVerifier()
         {
             var charList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-~";
 

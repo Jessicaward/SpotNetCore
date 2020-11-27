@@ -6,13 +6,9 @@ namespace SpotNetCore.Implementation
 {
     public class AuthorisationHelper
     {
-        public static string GetAuthorisationUrl()
+        public static string GetAuthorisationUrl(string codeVerifier)
         {
-            var details = new AuthorisationCodeDetails
-            {
-                RedirectUri = "https://localhost:5001/"
-            };
-            
+            var details = new AuthorisationCodeDetails(codeVerifier, "https://localhost:5001/");
             details.AuthorisationUri = BuildAuthorisationUri("33bea7a309d24a08a71ff9c8f48be287", details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", "user-follow-modify");
             
             return details.AuthorisationUri;

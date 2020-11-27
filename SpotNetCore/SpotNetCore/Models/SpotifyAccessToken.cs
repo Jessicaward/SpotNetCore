@@ -7,5 +7,10 @@ namespace SpotNetCore.Models
         public string Scope { get; set; }
         public int ExpiresInSeconds { get; set; }
         public string RefreshToken { get; set; }
+
+        public SpotifyAccessToken CreateFromJson(string json)
+        {
+            return new SpotifyAccessToken();
+        }
     }
 }
