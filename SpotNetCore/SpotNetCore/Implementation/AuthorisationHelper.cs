@@ -20,13 +20,13 @@ namespace SpotNetCore.Implementation
 
         private static string BuildAuthorisationUri(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
         {
-            return HttpUtility.HtmlEncode(new UriBuilder()
+            return new UriBuilder()
             {
                 Scheme = "https",
                 Host = "accounts.spotify.com",
                 Path = "authorize",
                 Query = BuildAuthorisationQuery(clientId, redirectUri, codeChallenge, state, scopes)
-            }.Uri.ToString());
+            }.Uri.ToString();
         }
 
         private static string BuildAuthorisationQuery(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
