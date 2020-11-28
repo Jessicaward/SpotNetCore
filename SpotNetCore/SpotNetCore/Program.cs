@@ -55,14 +55,14 @@ namespace SpotNetCore
                                 {
                                     Console.WriteLine("sending response");
                                     var response = await httpClient.PostAsync("https://accounts.spotify.com/api/token",
-                                        new FormUrlEncodedContent(new Dictionary<string, string>
-                                        {
-                                            {"code", context.Request.Query["code"]},
-                                            {"client_id", "33bea7a309d24a08a71ff9c8f48be287"},
-                                            {"grant_type", "authorization_code"},
-                                            {"redirect_uri", "https://localhost:5001/"},
-                                            {"code_verifier", _codeVerifier}
-                                        }));
+                                        new StringContent(JsonSerializer.Serialize(new SpotifyAuthorisationCode()
+                                    {
+                                        Code = context.Request.Query["code"],
+                                        ClientId = "33bea7a309d24a08a71ff9c8f48be287",
+                                        GrantType = "authorization_code",
+                                        RedirectUri = "https://localhost:5001/",
+                                        CodeVerifier = _codeVerifier
+                                    })));
                                     
                                     Console.WriteLine(response.StatusCode);
                                     
