@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -20,11 +21,12 @@ namespace SpotNetCore
         public Program(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
         }
         
         public static async Task Main(string[] args)
         {
+            _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
+            
             await RunTheThing();
             var authorisationUrl = AuthorisationHelper.GetAuthorisationUrl(_codeVerifier);
             
@@ -47,12 +49,11 @@ namespace SpotNetCore
                         {
                             endpoints.MapGet("/", async context =>
                             {
-                                var code = context.Request.Query["code"];
-                                var state = context.Request.Query["state"];
                                 await context.Response.WriteAsync("");
 
                                 using (var httpClient = new HttpClient())
                                 {
+                                    Console.WriteLine("sending response");
                                     var response = await httpClient.PostAsync("https://accounts.spotify.com/api/token",
                                         new FormUrlEncodedContent(new Dictionary<string, string>
                                         {
@@ -63,9 +64,17 @@ namespace SpotNetCore
                                             {"code_verifier", _codeVerifier}
                                         }));
                                     
-                                    response.EnsureSuccessStatusCode();
+                                    Console.WriteLine(response.StatusCode);
                                     
-                                    Token = new SpotifyAccessToken().CreateFromJson(await response.Content.ReadAsStringAsync());
+                                    response.EnsureSuccessStatusCode();
+
+                                    Token = JsonSerializer.Deserialize<SpotifyAccessToken>(
+                                        await response.Content.ReadAsStringAsync());
+                                    
+                                    Token.ExpiresAt = DateTime.Now.AddSeconds(Token.ExpiresInSeconds);
+                                    
+                                    Console.WriteLine(Token.AccessToken);
+                                    Console.WriteLine(Token.ExpiresAt);
                                 }
                             });
                         });
