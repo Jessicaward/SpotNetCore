@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -62,7 +63,7 @@ namespace SpotNetCore
                                         GrantType = "authorization_code",
                                         RedirectUri = "https://localhost:5001/",
                                         CodeVerifier = _codeVerifier
-                                    })));
+                                    }), Encoding.UTF8, "application/json"));
                                     
                                     Console.WriteLine(response.StatusCode);
                                     
