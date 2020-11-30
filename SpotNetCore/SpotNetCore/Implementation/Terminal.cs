@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SpotNetCore.Implementation
 {
@@ -7,6 +9,20 @@ namespace SpotNetCore.Implementation
     /// </summary>
     public class Terminal
     {
+        public static void Startup()
+        {
+            WriteGreen(@"
+
+███████ ██████   ██████  ████████ ███    ██ ███████ ████████  ██████  ██████  ██████  ███████ 
+██      ██   ██ ██    ██    ██    ████   ██ ██         ██    ██      ██    ██ ██   ██ ██      
+███████ ██████  ██    ██    ██    ██ ██  ██ █████      ██    ██      ██    ██ ██████  █████   
+     ██ ██      ██    ██    ██    ██  ██ ██ ██         ██    ██      ██    ██ ██   ██ ██      
+███████ ██       ██████     ██    ██   ████ ███████    ██     ██████  ██████  ██   ██ ███████ 
+
+~ https://github.com/Jessicaward/SpotNetCore ~
+");
+        }
+        
         public static void WriteRed(string text)
         {
             Console.ForegroundColor = ConsoleColor.Red;

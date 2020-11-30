@@ -25,6 +25,9 @@ namespace SpotNetCore
         
         public static async Task Main(string[] args)
         {
+            Terminal.Startup();
+            Console.ReadLine();
+            
             _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
             
             await GetAuthToken();
