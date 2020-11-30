@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text.Json;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +27,7 @@ namespace SpotNetCore
         {
             _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
             
-            await RunTheThing();
+            await GetAuthToken();
             var authorisationUrl = AuthorisationHelper.GetAuthorisationUrl(_codeVerifier);
             
             Console.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
@@ -37,9 +36,8 @@ namespace SpotNetCore
             Console.WriteLine(Token.AccessToken);
         }
 
-        public static async Task RunTheThing()
+        public static async Task GetAuthToken()
         {
-            Console.WriteLine("Running the thing");
             Task.Run(() =>
             {
                 WebHost.CreateDefaultBuilder(null)
@@ -54,7 +52,6 @@ namespace SpotNetCore
 
                                 using (var httpClient = new HttpClient())
                                 {
-                                    Console.WriteLine("sending response");
                                     var response = await httpClient.PostAsync("https://accounts.spotify.com/api/token",
                                         new StringContent(JsonSerializer.Serialize(new SpotifyAuthorisationCode()
                                     {
@@ -65,17 +62,12 @@ namespace SpotNetCore
                                         CodeVerifier = _codeVerifier
                                     }), Encoding.UTF8, "application/json"));
                                     
-                                    Console.WriteLine(response.StatusCode);
-                                    
                                     response.EnsureSuccessStatusCode();
 
                                     Token = JsonSerializer.Deserialize<SpotifyAccessToken>(
                                         await response.Content.ReadAsStringAsync());
                                     
                                     Token.ExpiresAt = DateTime.Now.AddSeconds(Token.ExpiresInSeconds);
-                                    
-                                    Console.WriteLine(Token.AccessToken);
-                                    Console.WriteLine(Token.ExpiresAt);
                                 }
                             });
                         });
