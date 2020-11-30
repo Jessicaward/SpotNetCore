@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 namespace SpotNetCore.Implementation
 {
     /// <summary>
-    /// Terminal is suppoesed to act as a wrapper around Console. To provide colour, state etc.
+    /// Terminal is supposed to act as a wrapper around Console. To provide colour, state etc.
     /// </summary>
     public class Terminal
     {
         public static void Startup()
         {
-            WriteGreen(@"
+            WriteDarkGreen(@"
 
 ███████ ██████   ██████  ████████ ███    ██ ███████ ████████  ██████  ██████  ██████  ███████ 
 ██      ██   ██ ██    ██    ██    ████   ██ ██         ██    ██      ██    ██ ██   ██ ██      
