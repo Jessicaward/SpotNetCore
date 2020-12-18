@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace SpotNetCore.Models
 {
-    public class Command
+    public class ParsedCommand
     {
-        public string command { get; set; }
+        public string Command { get; set; }
         public IEnumerable<string> Parameters { get; set; }
     }
 }

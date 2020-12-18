@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using SpotNetCore.Models;
 
 namespace SpotNetCore.Implementation
@@ -19,9 +20,19 @@ namespace SpotNetCore.Implementation
             return Console.ReadLine();
         }
 
-        private Command ParseCommand(string input)
+        private ParsedCommand ParseCommand(string input)
         {
-            return new Command();
-        }
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                throw new ArgumentException("Input must contain command");
+            }
+            
+            var split = input.Split(" ");
+            return new ParsedCommand
+            {
+                Command = split[0],
+                Parameters = split.Skip(1).Take(split.Length - 1)
+            };
+        } 
     }
 }
