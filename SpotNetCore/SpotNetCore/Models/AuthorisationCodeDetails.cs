@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace SpotNetCore.Models
 {
@@ -29,8 +30,31 @@ namespace SpotNetCore.Models
         {
             using (var sha = SHA256.Create())
             {
-                return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(verifier)));
+                return UrlEncode(sha.ComputeHash(Encoding.UTF8.GetBytes(verifier)));
             }
+        }
+
+        private static string UrlEncode(byte[] input)
+        {
+            var buf = new char[checked(checked(input.Length + 2) / 3 * 4)];
+            var numBase64Chars = Convert.ToBase64CharArray(input, 0, input.Length, buf, 0);
+
+            foreach (var index in Enumerable.Range(0, numBase64Chars))
+            {
+                switch (buf[index])
+                {
+                    case '+':
+                        buf[index] = '-';
+                        break;
+                    case '/':
+                        buf[index] = '_';
+                        break;
+                    case '=':
+                        return new string(buf, startIndex: 0, length: index);
+                }
+            }
+
+            return new string(buf, startIndex: 0, length: numBase64Chars);
         }
     }
 }
