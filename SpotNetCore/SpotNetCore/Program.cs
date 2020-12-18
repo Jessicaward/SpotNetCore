@@ -27,7 +27,7 @@ namespace SpotNetCore
         public static async Task Main(string[] args)
         {
             Terminal.Startup();
-            Console.ReadLine();
+            Terminal.ReadLine();
             
             _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
             
@@ -36,7 +36,8 @@ namespace SpotNetCore
             
             Terminal.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
             Terminal.WriteLine(authorisationUrl);
-            Console.Clear();
+            Terminal.ReadLine();
+            Terminal.Clear();
         }
         
         public static async Task GetAuthToken()
