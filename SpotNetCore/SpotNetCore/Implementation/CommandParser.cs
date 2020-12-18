@@ -4,6 +4,9 @@ using SpotNetCore.Models;
 
 namespace SpotNetCore.Implementation
 {
+    /// <summary>
+    /// Main application loop, parses and executes commands
+    /// </summary>
     public class CommandParser
     {
         public async void HandleCommands()
@@ -12,6 +15,28 @@ namespace SpotNetCore.Implementation
             while (!exit)
             {
                 var command = ParseCommand(GetUserInput());
+
+                var spotifyCommand = command.Command.ToLower() switch
+                {
+                    "play" => SpotifyCommand.PlayCurrentTrack,
+                    "pause" => SpotifyCommand.PauseCurrentTrack,
+                    "next" => SpotifyCommand.NextTrack,
+                    "previous" => SpotifyCommand.PreviousTrack,
+                    "restart" => SpotifyCommand.RestartTrack,
+                    "artist" => SpotifyCommand.PlayArtist,
+                    "track" => SpotifyCommand.PlayTrack,
+                    "shuffle" => SpotifyCommand.Shuffle,
+                    "repeat" => SpotifyCommand.Repeat,
+                    "volume" => SpotifyCommand.Volume,
+                    "help" => SpotifyCommand.Help,
+                    "exit" => SpotifyCommand.Exit
+                };
+
+                if (spotifyCommand == SpotifyCommand.Exit)
+                {
+                    exit = true;
+                    break;
+                }
             }
         }
 
@@ -33,6 +58,6 @@ namespace SpotNetCore.Implementation
                 Command = split[0],
                 Parameters = split.Skip(1).Take(split.Length - 1)
             };
-        } 
+        }
     }
 }
