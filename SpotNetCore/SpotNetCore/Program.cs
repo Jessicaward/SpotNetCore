@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Net.Http;
 using System.Text;
@@ -38,7 +39,7 @@ namespace SpotNetCore
             Console.ReadLine();
             Console.WriteLine(Token.AccessToken);
         }
-
+        
         public static async Task GetAuthToken()
         {
             Task.Run(() =>
@@ -56,14 +57,14 @@ namespace SpotNetCore
                                 using (var httpClient = new HttpClient())
                                 {
                                     var response = await httpClient.PostAsync("https://accounts.spotify.com/api/token",
-                                        new StringContent(JsonSerializer.Serialize(new SpotifyAuthorisationCode()
-                                    {
-                                        Code = context.Request.Query["code"],
-                                        ClientId = "33bea7a309d24a08a71ff9c8f48be287",
-                                        GrantType = "authorization_code",
-                                        RedirectUri = "https://localhost:5001/",
-                                        CodeVerifier = _codeVerifier
-                                    }), Encoding.UTF8, "application/json"));
+                                        new FormUrlEncodedContent(new Dictionary<string, string>
+                                        {
+                                            {"code", context.Request.Query["code"].ToString()},
+                                            {"client_id", "33bea7a309d24a08a71ff9c8f48be287"},
+                                            {"grant_type", "authorization_code"},
+                                            {"redirect_uri", "https://localhost:5001/"},
+                                            {"code_verifier", _codeVerifier}
+                                        }));
                                     
                                     response.EnsureSuccessStatusCode();
 
