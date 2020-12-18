@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Net.Http;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -34,10 +34,9 @@ namespace SpotNetCore
             await GetAuthToken();
             var authorisationUrl = AuthorisationHelper.GetAuthorisationUrl(_codeVerifier);
             
-            Console.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
-            Console.WriteLine(authorisationUrl);
-            Console.ReadLine();
-            Console.WriteLine(Token.AccessToken);
+            Terminal.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
+            Terminal.WriteLine(authorisationUrl);
+            Console.Clear();
         }
         
         public static async Task GetAuthToken()

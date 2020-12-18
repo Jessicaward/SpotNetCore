@@ -76,5 +76,10 @@ namespace SpotNetCore.Implementation
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(text);
         }
+
+        public static void WriteLine(string text)
+        {
+            WriteWhite(text);
+        }
     }
 }
