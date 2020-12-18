@@ -15,6 +15,8 @@ namespace SpotNetCore.Models
         Repeat,
         Volume,
         Help,
-        Exit
+        Exit,
+        Queue,
+        Current
     }
 }

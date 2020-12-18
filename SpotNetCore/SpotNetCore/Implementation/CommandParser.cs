@@ -25,17 +25,25 @@ namespace SpotNetCore.Implementation
                     "restart" => SpotifyCommand.RestartTrack,
                     "artist" => SpotifyCommand.PlayArtist,
                     "track" => SpotifyCommand.PlayTrack,
+                    "album" => SpotifyCommand.PlayAlbum,
+                    "playlist" => SpotifyCommand.PlayPlaylist,
                     "shuffle" => SpotifyCommand.Shuffle,
                     "repeat" => SpotifyCommand.Repeat,
                     "volume" => SpotifyCommand.Volume,
                     "help" => SpotifyCommand.Help,
-                    "exit" => SpotifyCommand.Exit
+                    "exit" => SpotifyCommand.Exit,
+                    "queue" => SpotifyCommand.Queue,
+                    "current" => SpotifyCommand.Current
                 };
 
                 if (spotifyCommand == SpotifyCommand.Exit)
                 {
                     exit = true;
                     break;
+                }
+                else if (spotifyCommand == SpotifyCommand.Help)
+                {
+                    
                 }
             }
         }
