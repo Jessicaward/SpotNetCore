@@ -7,7 +7,7 @@ namespace SpotNetCore.Implementation
     /// <summary>
     /// Main application loop, parses and executes commands
     /// </summary>
-    public class CommandParser
+    public class CommandHandler
     {
         public async void HandleCommands()
         {
@@ -41,9 +41,11 @@ namespace SpotNetCore.Implementation
                     exit = true;
                     break;
                 }
-                else if (spotifyCommand == SpotifyCommand.Help)
+                
+                if (spotifyCommand == SpotifyCommand.Help)
                 {
-                    
+                    HelpManager.DisplayHelp();
+                    break;
                 }
             }
         }
