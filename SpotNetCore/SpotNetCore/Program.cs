@@ -26,9 +26,10 @@ namespace SpotNetCore
                 {
                     logging.AddConsole();
                 })
+                .AddHostedService<AuthorisationManager>() //Refresh token
                 .BuildServiceProvider();
 
-            serviceProvider.GetService<AuthorisationManager>();
+            var token = await serviceProvider.GetService<AuthorisationManager>().Authenticate();
             
             Terminal.Clear();
             
