@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using SpotNetCore.Controllers;
 using SpotNetCore.Models;
 
 namespace SpotNetCore.Implementation
@@ -32,6 +33,8 @@ namespace SpotNetCore.Implementation
                     "volume" => SpotifyCommand.Volume,
                     "help" => SpotifyCommand.Help,
                     "exit" => SpotifyCommand.Exit,
+                    "close" => SpotifyCommand.Exit,
+                    "quit" => SpotifyCommand.Exit,
                     "queue" => SpotifyCommand.Queue,
                     "current" => SpotifyCommand.Current
                 };
@@ -46,6 +49,22 @@ namespace SpotNetCore.Implementation
                 {
                     HelpManager.DisplayHelp();
                     break;
+                }
+
+                if (!AuthenticationManager.IsAuthenticated)
+                {
+                    throw new NotAuthenticatedException();
+                }
+                
+                //Previous commands don't require authentication
+                if (AuthenticationManager.Token.ExpiresAt <= DateTime.Now.AddSeconds(20))
+                {
+                    throw new NotImplementedException();
+                }
+
+                if (spotifyCommand == SpotifyCommand.PlayCurrentTrack)
+                {
+                    new PlayController().PlayCurrentTrack();
                 }
             }
         }

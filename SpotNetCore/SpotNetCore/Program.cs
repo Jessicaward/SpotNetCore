@@ -21,15 +21,15 @@ namespace SpotNetCore
             Terminal.ReadLine();
             
             var serviceProvider = new ServiceCollection()
-                .AddSingleton<AuthorisationManager>()
+                .AddSingleton<AuthenticationManager>()
                 .AddLogging(logging =>
                 {
                     logging.AddConsole();
                 })
-                .AddHostedService<AuthorisationManager>() //Refresh token
+                .AddHostedService<AuthenticationManager>() //Refresh token
                 .BuildServiceProvider();
 
-            var token = await serviceProvider.GetService<AuthorisationManager>().Authenticate();
+            var token = await serviceProvider.GetService<AuthenticationManager>().Authenticate();
             
             Terminal.Clear();
             

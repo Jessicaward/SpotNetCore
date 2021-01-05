@@ -18,7 +18,7 @@ namespace SpotNetCore
         public void ConfigureServices(IServiceCollection services)
         {
             var serviceProvider = new ServiceCollection()
-                .AddSingleton<AuthorisationManager>()
+                .AddSingleton<AuthenticationManager>()
                 .AddLogging(logging =>
                 {
                     logging.AddConsole();

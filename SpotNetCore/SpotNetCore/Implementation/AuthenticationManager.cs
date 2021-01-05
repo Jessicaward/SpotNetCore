@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -13,13 +14,14 @@ using SpotNetCore.Models;
 
 namespace SpotNetCore.Implementation
 {
-    public class AuthorisationManager : BackgroundService
+    public class AuthenticationManager : BackgroundService
     {
+        public static bool IsAuthenticated;
         private static string _codeVerifier;
         private static int _checkRefreshTimeInSeconds; 
-        private static SpotifyAccessToken Token;
+        public static SpotifyAccessToken Token;
 
-        public AuthorisationManager()
+        public AuthenticationManager()
         {
             _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
             _checkRefreshTimeInSeconds = 30;
@@ -29,7 +31,7 @@ namespace SpotNetCore.Implementation
         {
             await GetAuthToken();
             
-            var authorisationUrl = AuthorisationManager.GetAuthorisationUrl(_codeVerifier);
+            var authorisationUrl = AuthenticationManager.GetAuthorisationUrl(_codeVerifier);
             
             Terminal.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
             Terminal.WriteLine(authorisationUrl);
@@ -47,7 +49,8 @@ namespace SpotNetCore.Implementation
         private static string GetAuthorisationUrl(string codeVerifier)
         {
             var details = new AuthorisationCodeDetails(codeVerifier, "https://localhost:5001/");
-            details.AuthorisationUri = BuildAuthorisationUri("33bea7a309d24a08a71ff9c8f48be287", details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", "user-follow-modify");
+            var scopes = new List<string> {"user-modify-playback-state", "user-follow-modify"}; //todo: move this to appsettings
+            details.AuthorisationUri = BuildAuthorisationUri("33bea7a309d24a08a71ff9c8f48be287", details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join(' ', scopes));
             
             return details.AuthorisationUri;
         }
@@ -101,6 +104,7 @@ namespace SpotNetCore.Implementation
                                     Token = JsonSerializer.Deserialize<SpotifyAccessToken>(await response.Content.ReadAsStringAsync());
                                     
                                     Token.ExpiresAt = DateTime.Now.AddSeconds(Token.ExpiresInSeconds);
+                                    IsAuthenticated = true;
                                 }
                             });
                         });
