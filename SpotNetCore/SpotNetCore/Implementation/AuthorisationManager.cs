@@ -107,7 +107,8 @@ namespace SpotNetCore.Implementation
                     }).Build().RunAsync();
             });
         }
-
+        
+        //Refresh Token task
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             //todo: this doesn't run, why?
