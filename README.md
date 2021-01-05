@@ -2,6 +2,12 @@
 Command-line Spotify client written in .NET Core
 
 ## Commands
+### Play
+`play` will play the current track.
+Enter the following into the command line:
+```
+play
+```
 ### Help
 `help` will display a list of supported SpotNetCore commands.
 Enter the following into the command line:
