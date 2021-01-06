@@ -57,9 +57,9 @@ namespace SpotNetCore.Implementation
                 }
                 
                 //Previous commands don't require authentication
-                if (AuthenticationManager.Token.ExpiresAt <= DateTime.Now.AddSeconds(20))
+                if (AuthenticationManager.IsTokenAboutToExpire())
                 {
-                    throw new NotImplementedException();
+                    await AuthenticationManager.RequestRefreshedAccessToken();
                 }
 
                 if (spotifyCommand == SpotifyCommand.PlayCurrentTrack)
@@ -70,6 +70,11 @@ namespace SpotNetCore.Implementation
                 if (spotifyCommand == SpotifyCommand.PauseCurrentTrack)
                 {
                     new PlayerController().PauseCurrentTrack();
+                }
+
+                if (spotifyCommand == SpotifyCommand.NextTrack)
+                {
+                    var currentTrack = new PlayerController().NextTrack();
                 }
             }
         }
