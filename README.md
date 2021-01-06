@@ -19,8 +19,14 @@ This command will pause the current track.
 pause
 ```
 
+### Current
+This command will display the current track.
+```
+current
+```
+
 ### Next
-This command will skip the current track, playing the next song in the queue.
+This command will skip the current track, playing the next track in the queue. It will then print the current track.
 ```
 next
 ```
