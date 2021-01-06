@@ -75,6 +75,7 @@ namespace SpotNetCore.Implementation
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
                     var currentTrack = new PlayerController().NextTrack();
+                    Terminal.WriteLine(currentTrack.Result?.Item?.Name);
                 }
             }
         }
