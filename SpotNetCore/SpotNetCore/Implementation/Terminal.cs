@@ -34,7 +34,7 @@ namespace SpotNetCore.Implementation
                 return;
             }
             
-            WriteYellow($"Now Playing: {currentTrack?.Item?.Name} - {currentTrack?.Item?.Album?.Name} - {currentTrack?.Item?.Artists.FirstOrDefault()?.Name}");
+            WriteYellow($"Now Playing: {currentTrack.Item?.Name} - {currentTrack.Item?.Album?.Name} - {currentTrack.Item?.Artists.FirstOrDefault()?.Name}");
         }
 
         public static void WriteRed(string text)

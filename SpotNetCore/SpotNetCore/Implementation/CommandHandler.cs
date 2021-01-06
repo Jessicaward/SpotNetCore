@@ -73,10 +73,16 @@ namespace SpotNetCore.Implementation
                     new PlayerController().PauseCurrentTrack();
                 }
 
+                if (spotifyCommand == SpotifyCommand.Current)
+                {
+                    //todo: fix async issue
+                    Terminal.WriteCurrentSong(new PlayerController().GetCurrentlyPlaying().Result);
+                }
+                
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
-                    var currentTrack = new PlayerController().NextTrack();
-                    Terminal.WriteCurrentSong(currentTrack.Result);
+                    //todo: fix async issue
+                    Terminal.WriteCurrentSong(new PlayerController().NextTrack().Result);
                 }
             }
         }
