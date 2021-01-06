@@ -19,6 +19,12 @@ This command will pause the current track.
 pause
 ```
 
+### Next
+This command will skip the current track, playing the next song in the queue.
+```
+next
+```
+
 ### Help
 This command will display a list of supported SpotNetCore commands.
 ```
