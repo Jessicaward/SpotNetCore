@@ -36,7 +36,8 @@ namespace SpotNetCore.Implementation
                     "close" => SpotifyCommand.Exit,
                     "quit" => SpotifyCommand.Exit,
                     "queue" => SpotifyCommand.Queue,
-                    "current" => SpotifyCommand.Current
+                    "current" => SpotifyCommand.Current,
+                    "clear" => SpotifyCommand.ClearQueue
                 };
 
                 if (spotifyCommand == SpotifyCommand.Exit)

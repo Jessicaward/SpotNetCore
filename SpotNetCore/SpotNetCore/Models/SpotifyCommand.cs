@@ -17,6 +17,7 @@ namespace SpotNetCore.Models
         Help,
         Exit,
         Queue,
+        ClearQueue,
         Current
     }
 }
