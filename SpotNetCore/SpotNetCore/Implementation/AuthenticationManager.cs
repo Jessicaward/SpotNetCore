@@ -27,6 +27,13 @@ namespace SpotNetCore.Implementation
             _checkRefreshTimeInSeconds = 30;
         }
 
+        public static bool IsTokenAboutToExpire() => Token.ExpiresAt <= DateTime.Now.AddSeconds(20);
+
+        public static async Task<SpotifyAccessToken> RequestRefreshedAccessToken()
+        {
+            throw new NotImplementedException();
+        }
+        
         public async Task<SpotifyAccessToken> Authenticate()
         {
             await GetAuthToken();
