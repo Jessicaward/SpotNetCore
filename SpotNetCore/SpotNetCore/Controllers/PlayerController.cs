@@ -65,7 +65,7 @@ namespace SpotNetCore.Controllers
 
                 response.EnsureSuccessStatusCode();
 
-                return JsonSerializer.Deserialize<SpotifyCurrentlyPlaying>(await response.Content.ReadAsStringAsync());   
+                return JsonSerializer.Deserialize<SpotifyCurrentlyPlaying>(await response.Content.ReadAsStringAsync());
             }
         }
     }

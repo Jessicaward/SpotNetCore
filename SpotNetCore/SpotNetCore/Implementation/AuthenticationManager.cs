@@ -56,7 +56,7 @@ namespace SpotNetCore.Implementation
         private static string GetAuthorisationUrl(string codeVerifier)
         {
             var details = new AuthorisationCodeDetails(codeVerifier, "https://localhost:5001/");
-            var scopes = new List<string> {"user-modify-playback-state", "user-follow-modify"}; //todo: move this to appsettings
+            var scopes = new List<string> {"user-modify-playback-state", "user-follow-modify", "user-read-currently-playing"}; //todo: move this to appsettings
             details.AuthorisationUri = BuildAuthorisationUri("33bea7a309d24a08a71ff9c8f48be287", details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join(' ', scopes));
             
             return details.AuthorisationUri;
