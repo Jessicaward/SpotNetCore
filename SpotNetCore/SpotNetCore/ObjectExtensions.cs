@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SpotNetCore
@@ -13,6 +15,11 @@ namespace SpotNetCore
         public static async Task<object> LetInAsync<T>(this T o, Func<T, Task<object>> f)
         {
             return await f(o);
+        }
+
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> o)
+        {
+            return o == null || !o.Any();
         }
     }
 }
