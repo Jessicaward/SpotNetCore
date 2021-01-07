@@ -11,7 +11,7 @@ namespace SpotNetCore.Controllers
 {
     public class PlayerController
     {
-        public async Task<bool> PlayCurrentTrack()
+        public async Task PlayCurrentTrack()
         {
             using (var httpClient = new HttpClient())
             {
@@ -19,18 +19,23 @@ namespace SpotNetCore.Controllers
                     new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
                         AuthenticationManager.Token.AccessToken);
 
-                return (await httpClient.PutAsync("https://api.spotify.com/v1/me/player/play", null)).StatusCode == HttpStatusCode.NoContent;
+                var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/play", null);
+                
+                response.EnsureSuccessStatusCode();
             }
         }
 
-        public async Task<bool> PauseCurrentTrack()
+        public async Task PauseCurrentTrack()
         {
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
                         AuthenticationManager.Token.AccessToken);
-                return (await httpClient.PutAsync("https://api.spotify.com/v1/me/player/pause", null)).StatusCode == HttpStatusCode.NoContent;
+                
+                var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/pause", null);
+
+                response.EnsureSuccessStatusCode();
             }
         }
 
