@@ -34,7 +34,7 @@ namespace SpotNetCore.Controllers
             }
         }
 
-        public async Task<SpotifyCurrentlyPlaying> NextTrack()
+        public async Task NextTrack()
         {
             using (var httpClient = new HttpClient())
             {
@@ -48,8 +48,6 @@ namespace SpotNetCore.Controllers
                 {
                     throw new Exception("Could not skip track");
                 }
-                
-                return await GetCurrentlyPlaying();
             }
         }
 

@@ -76,14 +76,14 @@ namespace SpotNetCore.Implementation
 
                 if (spotifyCommand == SpotifyCommand.Current)
                 {
-                    //todo: fix async issue
                     Terminal.WriteCurrentSong(await new PlayerController().GetCurrentlyPlaying());
                 }
                 
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
-                    //todo: fix async issue
-                    Terminal.WriteCurrentSong(await new PlayerController().NextTrack());
+                    //todo: get playercontroller via dependency injection
+                    await new PlayerController().NextTrack();
+                    Terminal.WriteCurrentSong(await new PlayerController().GetCurrentlyPlaying());
                 }
             }
         }
