@@ -1,5 +1,3 @@
-using System;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -13,63 +11,68 @@ namespace SpotNetCore.Controllers
     {
         public async Task PlayCurrentTrack()
         {
-            using (var httpClient = new HttpClient())
+            using var httpClient = new HttpClient
             {
-                httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken);
+                DefaultRequestHeaders =
+                {
+                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
+                        AuthenticationManager.Token.AccessToken)
+                }
+            };
 
-                var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/play", null);
-                
-                response.EnsureSuccessStatusCode();
-            }
+            var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/play", null);
+            
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task PauseCurrentTrack()
         {
-            using (var httpClient = new HttpClient())
+            using var httpClient = new HttpClient
             {
-                httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken);
+                DefaultRequestHeaders =
+                {
+                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
+                        AuthenticationManager.Token.AccessToken)
+                }
+            };
                 
-                var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/pause", null);
+            var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/pause", null);
 
-                response.EnsureSuccessStatusCode();
-            }
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task NextTrack()
         {
-            using (var httpClient = new HttpClient())
+            using var httpClient = new HttpClient
             {
-                httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken);
-
-                //Skip Track
-
-                if ((await httpClient.PostAsync("https://api.spotify.com/v1/me/player/next", null)).StatusCode != HttpStatusCode.NoContent)
+                DefaultRequestHeaders =
                 {
-                    throw new Exception("Could not skip track");
+                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
+                        AuthenticationManager.Token.AccessToken)
                 }
-            }
+            };
+            
+            var response = await httpClient.PostAsync("https://api.spotify.com/v1/me/player/next", null);
+                
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<SpotifyCurrentlyPlaying> GetCurrentlyPlaying()
         {
-            using (var httpClient = new HttpClient())
+            using var httpClient = new HttpClient
             {
-                httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken);
+                DefaultRequestHeaders =
+                {
+                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
+                        AuthenticationManager.Token.AccessToken)
+                }
+            };
                 
-                var response = await httpClient.GetAsync("https://api.spotify.com/v1/me/player/currently-playing");
+            var response = await httpClient.GetAsync("https://api.spotify.com/v1/me/player");
 
-                response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
 
-                return JsonSerializer.Deserialize<SpotifyCurrentlyPlaying>(await response.Content.ReadAsStringAsync());
-            }
+            return JsonSerializer.Deserialize<SpotifyCurrentlyPlaying>(await response.Content.ReadAsStringAsync());
         }
     }
 }
