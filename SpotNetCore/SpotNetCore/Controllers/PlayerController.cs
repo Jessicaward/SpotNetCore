@@ -43,12 +43,12 @@ namespace SpotNetCore.Controllers
                         AuthenticationManager.Token.AccessToken);
 
                 //Skip Track
-                if ((await httpClient.PostAsync("https://api.spotify.com/v1/me/player/next", null)).StatusCode !=
-                    HttpStatusCode.NoContent)
+
+                if ((await httpClient.PostAsync("https://api.spotify.com/v1/me/player/next", null)).StatusCode != HttpStatusCode.NoContent)
                 {
                     throw new Exception("Could not skip track");
                 }
-
+                
                 return await GetCurrentlyPlaying();
             }
         }

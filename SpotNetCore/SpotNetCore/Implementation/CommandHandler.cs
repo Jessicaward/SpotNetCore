@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using SpotNetCore.Controllers;
 using SpotNetCore.Models;
 
@@ -10,7 +11,7 @@ namespace SpotNetCore.Implementation
     /// </summary>
     public class CommandHandler
     {
-        public async void HandleCommands()
+        public async Task HandleCommands()
         {
             var exit = false;
             while (!exit)
@@ -76,13 +77,13 @@ namespace SpotNetCore.Implementation
                 if (spotifyCommand == SpotifyCommand.Current)
                 {
                     //todo: fix async issue
-                    Terminal.WriteCurrentSong(new PlayerController().GetCurrentlyPlaying().Result);
+                    Terminal.WriteCurrentSong(await new PlayerController().GetCurrentlyPlaying());
                 }
                 
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
                     //todo: fix async issue
-                    Terminal.WriteCurrentSong(new PlayerController().NextTrack().Result);
+                    Terminal.WriteCurrentSong(await new PlayerController().NextTrack());
                 }
             }
         }

@@ -35,7 +35,7 @@ namespace SpotNetCore
             
             //This is the main command handler. It will essentially handle everything apart from auth-related code.
             //API consumption is initiated here, but will eventually be executed elsewhere.
-            new CommandHandler().HandleCommands();
+            await new CommandHandler().HandleCommands();
         }
     }
 }
