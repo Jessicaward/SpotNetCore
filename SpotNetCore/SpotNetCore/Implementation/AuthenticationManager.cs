@@ -34,23 +34,13 @@ namespace SpotNetCore.Implementation
             throw new NotImplementedException();
         }
         
-        public async Task<SpotifyAccessToken> Authenticate()
+        public async Task Authenticate()
         {
             await GetAuthToken();
             
-            var authorisationUrl = AuthenticationManager.GetAuthorisationUrl(_codeVerifier);
-            
             Terminal.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
-            Terminal.WriteLine(authorisationUrl);
+            Terminal.WriteLine(AuthenticationManager.GetAuthorisationUrl(_codeVerifier));
             Terminal.ReadLine();
-
-            while (Token == null)
-            {
-                //todo: rewrite. maybe we can pass token back from GetAuthToken? If we can get around void return.
-                Thread.Sleep(250);
-            }
-
-            return Token;
         }
 
         private static string GetAuthorisationUrl(string codeVerifier)
