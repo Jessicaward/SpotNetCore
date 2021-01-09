@@ -18,12 +18,10 @@ namespace SpotNetCore.Implementation
         {
             _authenticationManager = authenticationManager;
             _playerService = playerService;
-            Console.WriteLine(authenticationManager);
         }
         
         public async Task HandleCommands()
         {
-            Console.WriteLine(_authenticationManager.Token);
             var exit = false;
             while (!exit)
             {
