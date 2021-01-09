@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SpotNetCore.Controllers;
 using SpotNetCore.Models;
+using SpotNetCore.Services;
 
 namespace SpotNetCore.Implementation
 {
@@ -11,8 +11,19 @@ namespace SpotNetCore.Implementation
     /// </summary>
     public class CommandHandler
     {
+        private readonly AuthenticationManager _authenticationManager;
+        private readonly PlayerService _playerService;
+
+        public CommandHandler(AuthenticationManager authenticationManager, PlayerService playerService)
+        {
+            _authenticationManager = authenticationManager;
+            _playerService = playerService;
+            Console.WriteLine(authenticationManager);
+        }
+        
         public async Task HandleCommands()
         {
+            Console.WriteLine(_authenticationManager.Token);
             var exit = false;
             while (!exit)
             {
@@ -59,31 +70,31 @@ namespace SpotNetCore.Implementation
                 }
                 
                 //Previous commands don't require authentication
-                if (AuthenticationManager.IsTokenAboutToExpire())
+                if (_authenticationManager.IsTokenAboutToExpire())
                 {
                     await AuthenticationManager.RequestRefreshedAccessToken();
                 }
 
                 if (spotifyCommand == SpotifyCommand.PlayCurrentTrack)
                 {
-                    new PlayerController().PlayCurrentTrack();
+                    _playerService.PlayCurrentTrack();
                 }
 
                 if (spotifyCommand == SpotifyCommand.PauseCurrentTrack)
                 {
-                    new PlayerController().PauseCurrentTrack();
+                    _playerService.PauseCurrentTrack();
                 }
 
                 if (spotifyCommand == SpotifyCommand.Current)
                 {
-                    Terminal.WriteCurrentSong(await new PlayerController().GetCurrentlyPlaying());
+                    Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
                 }
                 
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
                     //todo: get playercontroller via dependency injection
-                    await new PlayerController().NextTrack();
-                    Terminal.WriteCurrentSong(await new PlayerController().GetCurrentlyPlaying());
+                    await _playerService.NextTrack();
+                    Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
                 }
             }
         }

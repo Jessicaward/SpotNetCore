@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SpotNetCore.Implementation;
+using SpotNetCore.Services;
 
 namespace SpotNetCore
 {
@@ -22,6 +23,8 @@ namespace SpotNetCore
             
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<AuthenticationManager>()
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<PlayerService>()
                 .AddLogging(logging =>
                 {
                     logging.AddConsole();
@@ -35,7 +38,7 @@ namespace SpotNetCore
             
             //This is the main command handler. It will essentially handle everything apart from auth-related code.
             //API consumption is initiated here, but will eventually be executed elsewhere.
-            await new CommandHandler().HandleCommands();
+            await serviceProvider.GetService<CommandHandler>().HandleCommands();
         }
     }
 }

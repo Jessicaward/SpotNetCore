@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -19,7 +18,7 @@ namespace SpotNetCore.Implementation
         public static bool IsAuthenticated;
         private static string _codeVerifier;
         private static int _checkRefreshTimeInSeconds; 
-        public static SpotifyAccessToken Token;
+        public SpotifyAccessToken Token;
 
         public AuthenticationManager()
         {
@@ -27,7 +26,7 @@ namespace SpotNetCore.Implementation
             _checkRefreshTimeInSeconds = 30;
         }
 
-        public static bool IsTokenAboutToExpire() => Token.ExpiresAt <= DateTime.Now.AddSeconds(20);
+        public bool IsTokenAboutToExpire() => Token.ExpiresAt <= DateTime.Now.AddSeconds(20);
 
         public static async Task<SpotifyAccessToken> RequestRefreshedAccessToken()
         {
@@ -39,11 +38,11 @@ namespace SpotNetCore.Implementation
             await GetAuthToken();
             
             Terminal.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
-            Terminal.WriteLine(AuthenticationManager.GetAuthorisationUrl(_codeVerifier));
+            Terminal.WriteLine(GetAuthorisationUrl(_codeVerifier));
             Terminal.ReadLine();
         }
 
-        private static string GetAuthorisationUrl(string codeVerifier)
+        private string GetAuthorisationUrl(string codeVerifier)
         {
             var details = new AuthorisationCodeDetails(codeVerifier, "https://localhost:5001/");
             var scopes = new List<string> {"user-modify-playback-state", "user-follow-modify", "user-read-currently-playing"}; //todo: move this to appsettings
@@ -52,7 +51,7 @@ namespace SpotNetCore.Implementation
             return details.AuthorisationUri;
         }
 
-        private static string BuildAuthorisationUri(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
+        private string BuildAuthorisationUri(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
         {
             return new UriBuilder()
             {
@@ -63,14 +62,14 @@ namespace SpotNetCore.Implementation
             }.Uri.ToString();
         }
 
-        private static string BuildAuthorisationQuery(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
+        private string BuildAuthorisationQuery(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
         {
             return "?client_id=" + clientId + "&response_type=code" 
                    + "&redirect_uri=" + redirectUri + "&code_challenge_method=S256"
                    + "&code_challenge=" + codeChallenge + "&state=" + state + "&scope=" + Uri.EscapeUriString(scopes);
         }
         
-        private static async Task GetAuthToken()
+        private async Task GetAuthToken()
         {
             Task.Run(() =>
             {

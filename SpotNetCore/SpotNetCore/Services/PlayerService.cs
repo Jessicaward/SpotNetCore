@@ -5,18 +5,25 @@ using System.Threading.Tasks;
 using SpotNetCore.Models;
 using AuthenticationManager = SpotNetCore.Implementation.AuthenticationManager;
 
-namespace SpotNetCore.Controllers
+namespace SpotNetCore.Services
 {
-    public class PlayerController
+    public class PlayerService
     {
+        private readonly AuthenticationManager _authenticationManager;
+
+        public PlayerService(AuthenticationManager authenticationManager)
+        {
+            _authenticationManager = authenticationManager;
+        }
+        
         public async Task PlayCurrentTrack()
         {
             using var httpClient = new HttpClient
             {
                 DefaultRequestHeaders =
                 {
-                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken)
+                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
+                        _authenticationManager.Token.AccessToken)
                 }
             };
 
@@ -31,8 +38,8 @@ namespace SpotNetCore.Controllers
             {
                 DefaultRequestHeaders =
                 {
-                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken)
+                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
+                        _authenticationManager.Token.AccessToken)
                 }
             };
                 
@@ -47,8 +54,8 @@ namespace SpotNetCore.Controllers
             {
                 DefaultRequestHeaders =
                 {
-                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken)
+                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
+                        _authenticationManager.Token.AccessToken)
                 }
             };
             
@@ -63,8 +70,8 @@ namespace SpotNetCore.Controllers
             {
                 DefaultRequestHeaders =
                 {
-                    Authorization = new AuthenticationHeaderValue(AuthenticationManager.Token.TokenType,
-                        AuthenticationManager.Token.AccessToken)
+                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
+                        _authenticationManager.Token.AccessToken)
                 }
             };
                 
