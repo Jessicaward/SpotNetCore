@@ -26,16 +26,22 @@ current
 ```
 
 ### Next
-This command will skip the current track, playing the next track in the queue. It will then print the current track.
+This command will skip the current track, playing the next track in the queue. It will then print information on the current track.
 ```
 next
 ```
 
 ### Previous
-This command will play the previous track. It will then print the current track.
+This command will play the previous track. It will then print information on the current track.
 *NOTE: This will not skip to the start of the current track, regardless of how far through the track you are. Use `restart` for this purpose.*
 ```
 previous
+```
+
+### Restart
+This command start the current track from the beginning. It will then print information on the current track.
+```
+restart
 ```
 
 ### Help
