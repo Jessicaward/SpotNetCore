@@ -39,9 +39,31 @@ previous
 ```
 
 ### Restart
-This command start the current track from the beginning. It will then print information on the current track.
+This command starts the current track from the beginning. It will then print information on the current track.
 ```
 restart
+```
+
+### Shuffle
+This command toggles shuffle on and off for the user's current player.
+```
+shuffle
+```
+Use the following *optional* parameters to specifically set a shuffle state:
+#### Turn Shuffle On
+```
+shuffle on
+```
+```
+shuffle true
+```
+
+#### Turn Shuffle Off
+```
+shuffle off
+```
+```
+shuffle false
 ```
 
 ### Help
