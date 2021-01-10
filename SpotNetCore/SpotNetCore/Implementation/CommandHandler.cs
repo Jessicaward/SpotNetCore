@@ -125,6 +125,19 @@ namespace SpotNetCore.Implementation
                     
                     _playerService.ShuffleToggle(toggle);
                 }
+
+                if (spotifyCommand == SpotifyCommand.Queue)
+                {
+                    //At least two parameters are required
+                    if (command.Parameters.IsNullOrEmpty() || command.Parameters.Count() < 2)
+                    {
+                        Terminal.WriteRed($"{command.Command} is not a valid command.");
+                        HelpManager.DisplayHelp();
+                        break;
+                    }
+                    
+                    
+                }
             }
         }
         

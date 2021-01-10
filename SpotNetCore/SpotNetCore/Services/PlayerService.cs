@@ -95,7 +95,7 @@ namespace SpotNetCore.Services
                    (currentlyPlayingTrack = await GetPlayerContext()).Item.Id == previousTrack.Item.Id &&
                    currentlyPlayingTrack.ProgressInMs >= previousTrack.ProgressInMs)
             {
-                Thread.Sleep(150);   
+                Thread.Sleep(150);
             }
             return currentlyPlayingTrack;
         }
