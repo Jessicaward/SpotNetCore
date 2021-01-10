@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SpotNetCore.Models;
 using SpotNetCore.Services;
@@ -91,6 +92,7 @@ namespace SpotNetCore.Implementation
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
                     await _playerService.NextTrack();
+                    
                     Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
                 }
             }
