@@ -16,6 +16,7 @@ namespace SpotNetCore.Services
 
         public SearchService(AuthenticationManager authenticationManager)
         {
+            _authenticationManager = authenticationManager;
             _httpClient = new HttpClient
             {
                 DefaultRequestHeaders =
@@ -24,7 +25,6 @@ namespace SpotNetCore.Services
                         _authenticationManager.Token.AccessToken)
                 }
             };
-            _authenticationManager = authenticationManager;
         }
 
         ~SearchService()

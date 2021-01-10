@@ -13,11 +13,13 @@ namespace SpotNetCore.Implementation
     {
         private readonly AuthenticationManager _authenticationManager;
         private readonly PlayerService _playerService;
+        private readonly SearchService _searchService;
 
-        public CommandHandler(AuthenticationManager authenticationManager, PlayerService playerService)
+        public CommandHandler(AuthenticationManager authenticationManager, PlayerService playerService, SearchService searchService)
         {
             _authenticationManager = authenticationManager;
             _playerService = playerService;
+            _searchService = searchService;
         }
         
         ~CommandHandler()
@@ -128,15 +130,27 @@ namespace SpotNetCore.Implementation
 
                 if (spotifyCommand == SpotifyCommand.Queue)
                 {
-                    //At least two parameters are required
-                    if (command.Parameters.IsNullOrEmpty() || command.Parameters.Count() < 2)
+                    //At least one parameter is required
+                    if (command.Parameters.IsNullOrEmpty())
                     {
                         Terminal.WriteRed($"{command.Command} is not a valid command.");
                         HelpManager.DisplayHelp();
                         break;
                     }
-                    
-                    
+
+                    if (command.Parameters.Any(x => x.Parameter.ToLower() == "track"))
+                    {
+                        var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "track");
+                        var tracks = await _searchService.SearchForTrack(parameter.Query);
+
+                        if (tracks.IsNullOrEmpty())
+                        {
+                            Terminal.WriteRed($"Could not find track {parameter.Query}");
+                            break;
+                        }
+
+                        _playerService.QueueTrack(tracks.First().Uri);
+                    }
                 }
             }
         }
