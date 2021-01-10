@@ -25,7 +25,7 @@ namespace SpotNetCore
                 .BuildServiceProvider();
 
             Console.WriteLine(serviceProvider.GetService<IConfigurationRoot>().GetSection("Message").Value);
-            serviceProvider.GetService<AuthenticationManager>().Authenticate();
+            await serviceProvider.GetService<AuthenticationManager>().Authenticate();
             
             Terminal.Clear();
             

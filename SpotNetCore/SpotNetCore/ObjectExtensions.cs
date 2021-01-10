@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace SpotNetCore
@@ -21,5 +24,11 @@ namespace SpotNetCore
         {
             return o == null || !o.Any();
         }
+
+        //When issuing a command to play whilst the player is already playing it throws a 403.
+        public static HttpResponseMessage EnsureSpotifySuccess(this HttpResponseMessage httpResponseMessage) =>
+            httpResponseMessage.StatusCode == HttpStatusCode.Forbidden
+                ? httpResponseMessage
+                : httpResponseMessage.EnsureSuccessStatusCode();
     }
 }

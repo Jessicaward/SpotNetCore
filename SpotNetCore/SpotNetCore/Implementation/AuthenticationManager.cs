@@ -74,7 +74,7 @@ namespace SpotNetCore.Implementation
         
         private async Task GetAuthToken()
         {
-            Task.Run(() =>
+            await Task.Run(() =>
             {
                 WebHost.CreateDefaultBuilder(null)
                     .Configure(y =>
@@ -84,7 +84,7 @@ namespace SpotNetCore.Implementation
                         {
                             endpoints.MapGet("/", async context =>
                             {
-                                await context.Response.WriteAsync("");
+                                await context.Response.CompleteAsync();
 
                                 using (var httpClient = new HttpClient())
                                 {

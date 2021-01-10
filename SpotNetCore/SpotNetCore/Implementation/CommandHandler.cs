@@ -83,12 +83,12 @@ namespace SpotNetCore.Implementation
 
                 if (spotifyCommand == SpotifyCommand.PlayCurrentTrack)
                 {
-                    _playerService.PlayCurrentTrack();
+                    await _playerService.PlayCurrentTrack();
                 }
 
                 if (spotifyCommand == SpotifyCommand.PauseCurrentTrack)
                 {
-                    _playerService.PauseCurrentTrack();
+                    await _playerService.PauseCurrentTrack();
                 }
 
                 if (spotifyCommand == SpotifyCommand.Current)

@@ -31,7 +31,7 @@ namespace SpotNetCore.Services
 
             var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/play", null);
             
-            response.EnsureSuccessStatusCode();
+            response.EnsureSpotifySuccess();
         }
 
         public async Task PauseCurrentTrack()
@@ -47,7 +47,7 @@ namespace SpotNetCore.Services
                 
             var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/pause", null);
 
-            response.EnsureSuccessStatusCode();
+            response.EnsureSpotifySuccess();
         }
 
         public async Task NextTrack()
@@ -63,7 +63,7 @@ namespace SpotNetCore.Services
             
             var response = await httpClient.PostAsync("https://api.spotify.com/v1/me/player/next", null);
                 
-            response.EnsureSuccessStatusCode();
+            response.EnsureSpotifySuccess();
         }
 
         public async Task<SpotifyPlayerContext> GetPlayerContext()
@@ -79,7 +79,7 @@ namespace SpotNetCore.Services
                 
             var response = await httpClient.GetAsync("https://api.spotify.com/v1/me/player");
 
-            response.EnsureSuccessStatusCode();
+            response.EnsureSpotifySuccess();
 
             return JsonSerializer.Deserialize<SpotifyPlayerContext>(await response.Content.ReadAsStringAsync());
         }
@@ -97,7 +97,7 @@ namespace SpotNetCore.Services
             
             var response = await httpClient.PostAsync("https://api.spotify.com/v1/me/player/previous", null);
 
-            response.EnsureSuccessStatusCode();
+            response.EnsureSpotifySuccess();
         }
 
         public async Task RestartTrack()
@@ -113,7 +113,7 @@ namespace SpotNetCore.Services
 
             var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/seek?position_ms=0", null);
 
-            response.EnsureSuccessStatusCode();
+            response.EnsureSpotifySuccess();
         }
 
         /// <param name="requestedShuffleState">Nullable bool depending on whether user specifies state or not.</param>
@@ -132,7 +132,7 @@ namespace SpotNetCore.Services
 
             var response = await httpClient.PutAsync($"https://api.spotify.com/v1/me/player/shuffle?state={shuffleState}", null);
 
-            response.EnsureSuccessStatusCode();
+            response.EnsureSpotifySuccess();
         }
     }
 }
