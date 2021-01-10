@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SpotNetCore.Implementation;
 using SpotNetCore.Services;
 
@@ -9,13 +7,6 @@ namespace SpotNetCore
 {
     class Program
     {
-        private readonly IServiceProvider _serviceProvider;
-        
-        public Program(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-        
         public static async Task Main(string[] args)
         {
             Terminal.Startup();
@@ -25,10 +16,6 @@ namespace SpotNetCore
                 .AddSingleton<AuthenticationManager>()
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<PlayerService>()
-                .AddLogging(logging =>
-                {
-                    logging.AddConsole();
-                })
                 .AddHostedService<AuthenticationManager>() //Refresh token
                 .BuildServiceProvider();
 

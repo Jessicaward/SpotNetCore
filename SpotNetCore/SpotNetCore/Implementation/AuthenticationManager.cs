@@ -62,7 +62,7 @@ namespace SpotNetCore.Implementation
             }.Uri.ToString();
         }
 
-        private string BuildAuthorisationQuery(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
+        private static string BuildAuthorisationQuery(string clientId, string redirectUri, string codeChallenge, string state, string scopes)
         {
             return "?client_id=" + clientId + "&response_type=code" 
                    + "&redirect_uri=" + redirectUri + "&code_challenge_method=S256"

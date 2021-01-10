@@ -67,8 +67,8 @@ namespace SpotNetCore.Implementation
                     throw new NotAuthenticatedException();
                 }
                 
-                //Previous commands don't require authentication
-                if (_authenticationManager.IsTokenAboutToExpire())
+                //The rest of the commands require authentication
+                if (_authenticationManager.Token == null || _authenticationManager.IsTokenAboutToExpire())
                 {
                     await AuthenticationManager.RequestRefreshedAccessToken();
                 }
@@ -90,19 +90,18 @@ namespace SpotNetCore.Implementation
                 
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
-                    //todo: get playercontroller via dependency injection
                     await _playerService.NextTrack();
                     Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
                 }
             }
         }
 
-        private string GetUserInput()
+        private static string GetUserInput()
         {
             return Console.ReadLine();
         }
 
-        private ParsedCommand ParseCommand(string input)
+        private static ParsedCommand ParseCommand(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
