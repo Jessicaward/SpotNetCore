@@ -8,6 +8,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using SpotNetCore.Models;
 
@@ -15,13 +16,15 @@ namespace SpotNetCore.Implementation
 {
     public class AuthenticationManager : BackgroundService
     {
+        private readonly IConfigurationRoot _config;
         public static bool IsAuthenticated;
         private static string _codeVerifier;
         private static int _checkRefreshTimeInSeconds; 
         public SpotifyAccessToken Token;
 
-        public AuthenticationManager()
+        public AuthenticationManager(IConfigurationRoot config)
         {
+            _config = config;
             _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
             _checkRefreshTimeInSeconds = 30;
         }
@@ -45,7 +48,7 @@ namespace SpotNetCore.Implementation
         private string GetAuthorisationUrl(string codeVerifier)
         {
             var details = new AuthorisationCodeDetails(codeVerifier, "https://localhost:5001/");
-            var scopes = new List<string> {"user-modify-playback-state", "user-follow-modify", "user-read-currently-playing"}; //todo: move this to appsettings
+            var scopes = _config.GetSection("requiredScopes").Get<List<string>>();
             details.AuthorisationUri = BuildAuthorisationUri("33bea7a309d24a08a71ff9c8f48be287", details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join(' ', scopes));
             
             return details.AuthorisationUri;

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpotNetCore.Implementation;
 using SpotNetCore.Services;
@@ -16,9 +18,13 @@ namespace SpotNetCore
                 .AddSingleton<AuthenticationManager>()
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<PlayerService>()
+                .AddSingleton<IConfigurationRoot>(config => new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build())
                 .AddHostedService<AuthenticationManager>() //Refresh token
                 .BuildServiceProvider();
 
+            Console.WriteLine(serviceProvider.GetService<IConfigurationRoot>().GetSection("Message").Value);
             serviceProvider.GetService<AuthenticationManager>().Authenticate();
             
             Terminal.Clear();
