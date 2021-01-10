@@ -49,7 +49,7 @@ namespace SpotNetCore.Implementation
         {
             var details = new AuthorisationCodeDetails(codeVerifier, "https://localhost:5001/");
             var scopes = _config.GetSection("requiredScopes").Get<List<string>>();
-            details.AuthorisationUri = BuildAuthorisationUri("33bea7a309d24a08a71ff9c8f48be287", details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join(' ', scopes));
+            details.AuthorisationUri = BuildAuthorisationUri(_config.GetSection("clientId").Value, details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join(' ', scopes));
             
             return details.AuthorisationUri;
         }
@@ -92,7 +92,7 @@ namespace SpotNetCore.Implementation
                                         new FormUrlEncodedContent(new Dictionary<string, string>
                                         {
                                             {"code", context.Request.Query["code"].ToString()},
-                                            {"client_id", "33bea7a309d24a08a71ff9c8f48be287"},
+                                            {"client_id", _config.GetSection("clientId").Value},
                                             {"grant_type", "authorization_code"},
                                             {"redirect_uri", "https://localhost:5001/"},
                                             {"code_verifier", _codeVerifier}
@@ -134,7 +134,7 @@ namespace SpotNetCore.Implementation
                             {
                                 {"grant_type", "refresh_token"},
                                 {"refresh_token", Token.RefreshToken},
-                                {"client_id", "33bea7a309d24a08a71ff9c8f48be287"}
+                                {"client_id", _config.GetSection("clientId").Value}
                             }), stoppingToken);
 
                         response.EnsureSuccessStatusCode();
