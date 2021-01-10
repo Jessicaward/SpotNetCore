@@ -103,7 +103,7 @@ namespace SpotNetCore.Services
         /// <param name="requestedShuffleState">Nullable bool depending on whether user specifies state or not.</param>
         public async Task ShuffleToggle(bool? requestedShuffleState)
         {
-            var shuffleState = requestedShuffleState == null ? !(await GetPlayerContext()).ShuffleState : requestedShuffleState.Value;
+            var shuffleState = requestedShuffleState ?? !(await GetPlayerContext()).ShuffleState;
 
             var response = await _httpClient.PutAsync($"https://api.spotify.com/v1/me/player/shuffle?state={shuffleState}", null);
 

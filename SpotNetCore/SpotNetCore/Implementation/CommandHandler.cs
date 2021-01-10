@@ -24,7 +24,6 @@ namespace SpotNetCore.Implementation
         {
             Dispose(false);
         }
-
         
         public async Task HandleCommands()
         {
