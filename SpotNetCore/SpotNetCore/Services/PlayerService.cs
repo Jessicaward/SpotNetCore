@@ -1,26 +1,24 @@
-using System.ComponentModel;
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using SpotNetCore.Implementation;
 using SpotNetCore.Models;
 using AuthenticationManager = SpotNetCore.Implementation.AuthenticationManager;
 
 namespace SpotNetCore.Services
 {
-    public class PlayerService
+    public class PlayerService : IDisposable
     {
         private readonly AuthenticationManager _authenticationManager;
+        private readonly HttpClient _httpClient;
 
         public PlayerService(AuthenticationManager authenticationManager)
         {
             _authenticationManager = authenticationManager;
-        }
-        
-        public async Task PlayCurrentTrack()
-        {
-            using var httpClient = new HttpClient
+            _httpClient = new HttpClient
             {
                 DefaultRequestHeaders =
                 {
@@ -28,111 +26,101 @@ namespace SpotNetCore.Services
                         _authenticationManager.Token.AccessToken)
                 }
             };
-
-            var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/play", null);
+        }
+        
+        ~PlayerService()
+        {
+            Dispose(false);
+        }
+        
+        public async Task PlayCurrentTrack()
+        {
+            var response = await _httpClient.PutAsync("https://api.spotify.com/v1/me/player/play", null);
             
             response.EnsureSpotifySuccess();
         }
 
         public async Task PauseCurrentTrack()
         {
-            using var httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
-                        _authenticationManager.Token.AccessToken)
-                }
-            };
-                
-            var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/pause", null);
+            var response = await _httpClient.PutAsync("https://api.spotify.com/v1/me/player/pause", null);
 
             response.EnsureSpotifySuccess();
         }
 
-        public async Task NextTrack()
+        public async Task<SpotifyPlayerContext> NextTrack()
         {
-            using var httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
-                        _authenticationManager.Token.AccessToken)
-                }
-            };
-            
-            var response = await httpClient.PostAsync("https://api.spotify.com/v1/me/player/next", null);
-                
-            response.EnsureSpotifySuccess();
-        }
+            var lastPlayingTrack = await GetPlayerContext();
 
+            var response = await _httpClient.PostAsync("https://api.spotify.com/v1/me/player/next", null);
+            response.EnsureSpotifySuccess();
+
+            return response.StatusCode == HttpStatusCode.Forbidden
+                ? lastPlayingTrack
+                : await WaitForNextTrack(lastPlayingTrack);
+        }
+        
         public async Task<SpotifyPlayerContext> GetPlayerContext()
         {
-            using var httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
-                        _authenticationManager.Token.AccessToken)
-                }
-            };
-                
-            var response = await httpClient.GetAsync("https://api.spotify.com/v1/me/player");
+            var response = await _httpClient.GetAsync("https://api.spotify.com/v1/me/player");
 
             response.EnsureSpotifySuccess();
 
             return JsonSerializer.Deserialize<SpotifyPlayerContext>(await response.Content.ReadAsStringAsync());
         }
 
-        public async Task PreviousTrack()
+        public async Task<SpotifyPlayerContext> PreviousTrack()
         {
-            using var httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
-                        _authenticationManager.Token.AccessToken)
-                }
-            };
-            
-            var response = await httpClient.PostAsync("https://api.spotify.com/v1/me/player/previous", null);
+            var lastPlayingTrack = await GetPlayerContext();
 
+            var response = await _httpClient.PostAsync("https://api.spotify.com/v1/me/player/previous", null);
             response.EnsureSpotifySuccess();
+
+            return response.StatusCode == HttpStatusCode.Forbidden
+                ? lastPlayingTrack
+                : await WaitForNextTrack(lastPlayingTrack);
         }
 
         public async Task RestartTrack()
         {
-            using var httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
-                        _authenticationManager.Token.AccessToken)
-                }
-            };
-
-            var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/seek?position_ms=0", null);
+            var response = await _httpClient.PutAsync("https://api.spotify.com/v1/me/player/seek?position_ms=0", null);
 
             response.EnsureSpotifySuccess();
+        }
+
+        private async Task<SpotifyPlayerContext> WaitForNextTrack(SpotifyPlayerContext previousTrack)
+        {
+            var currentlyPlayingTrack = (SpotifyPlayerContext)null;
+            var retries = 0;
+            while (++retries < 10 &&
+                   (currentlyPlayingTrack = await GetPlayerContext()).Item.Id == previousTrack.Item.Id &&
+                   currentlyPlayingTrack.ProgressInMs >= previousTrack.ProgressInMs)
+            {
+                Thread.Sleep(150);   
+            }
+            return currentlyPlayingTrack;
         }
 
         /// <param name="requestedShuffleState">Nullable bool depending on whether user specifies state or not.</param>
         public async Task ShuffleToggle(bool? requestedShuffleState)
         {
-            using var httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
-                        _authenticationManager.Token.AccessToken)
-                }
-            };
-
             var shuffleState = requestedShuffleState == null ? !(await GetPlayerContext()).ShuffleState : requestedShuffleState.Value;
 
-            var response = await httpClient.PutAsync($"https://api.spotify.com/v1/me/player/shuffle?state={shuffleState}", null);
+            var response = await _httpClient.PutAsync($"https://api.spotify.com/v1/me/player/shuffle?state={shuffleState}", null);
 
             response.EnsureSpotifySuccess();
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+
+            _httpClient?.Dispose();
+        }
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

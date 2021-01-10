@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SpotNetCore.Models;
@@ -10,7 +9,7 @@ namespace SpotNetCore.Implementation
     /// <summary>
     /// Main application loop, parses and executes commands
     /// </summary>
-    public class CommandHandler
+    public class CommandHandler : IDisposable
     {
         private readonly AuthenticationManager _authenticationManager;
         private readonly PlayerService _playerService;
@@ -20,6 +19,12 @@ namespace SpotNetCore.Implementation
             _authenticationManager = authenticationManager;
             _playerService = playerService;
         }
+        
+        ~CommandHandler()
+        {
+            Dispose(false);
+        }
+
         
         public async Task HandleCommands()
         {
@@ -98,16 +103,12 @@ namespace SpotNetCore.Implementation
                 
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
-                    await _playerService.NextTrack();
-                    
-                    Terminal.WriteCurrentSong(await _playerService.GetPlayerContext());
+                    Terminal.WriteCurrentSong(await _playerService.NextTrack());
                 }
 
                 if (spotifyCommand == SpotifyCommand.PreviousTrack)
                 {
-                    await _playerService.PreviousTrack();
-                    
-                    Terminal.WriteCurrentSong(await _playerService.GetPlayerContext());
+                    Terminal.WriteCurrentSong(await _playerService.PreviousTrack());
                 }
 
                 if (spotifyCommand == SpotifyCommand.RestartTrack)
@@ -146,6 +147,19 @@ namespace SpotNetCore.Implementation
                 Command = split[0],
                 Parameters = split.Skip(1).Take(split.Length - 1)
             };
+        }
+        
+        private void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+
+            _playerService?.Dispose();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
