@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SpotNetCore.Models
 {
-    public class SpotifyCurrentlyPlaying
+    public class SpotifyPlayerContext
     {
         [JsonPropertyName("device")]
         public SpotifyDevice Device { get; set; }

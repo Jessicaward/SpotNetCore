@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SpotNetCore.Models;
@@ -92,28 +93,37 @@ namespace SpotNetCore.Implementation
 
                 if (spotifyCommand == SpotifyCommand.Current)
                 {
-                    Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
+                    Terminal.WriteCurrentSong(await _playerService.GetPlayerContext());
                 }
                 
                 if (spotifyCommand == SpotifyCommand.NextTrack)
                 {
                     await _playerService.NextTrack();
                     
-                    Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
+                    Terminal.WriteCurrentSong(await _playerService.GetPlayerContext());
                 }
 
                 if (spotifyCommand == SpotifyCommand.PreviousTrack)
                 {
                     await _playerService.PreviousTrack();
                     
-                    Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
+                    Terminal.WriteCurrentSong(await _playerService.GetPlayerContext());
                 }
 
                 if (spotifyCommand == SpotifyCommand.RestartTrack)
                 {
                     await _playerService.RestartTrack();
                     
-                    Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
+                    Terminal.WriteCurrentSong(await _playerService.GetPlayerContext());
+                }
+
+                if (spotifyCommand == SpotifyCommand.Shuffle)
+                {
+                    var toggle = command.Parameters.IsNullOrEmpty()
+                        ? (bool?) null
+                        : command.Parameters.First() == "on" || command.Parameters.First() == "true";
+                    
+                    _playerService.ShuffleToggle(toggle);
                 }
             }
         }

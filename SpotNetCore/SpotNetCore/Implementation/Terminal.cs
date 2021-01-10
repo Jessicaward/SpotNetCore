@@ -26,7 +26,7 @@ namespace SpotNetCore.Implementation
 ");
         }
 
-        public static void WriteCurrentSong(SpotifyCurrentlyPlaying currentTrack)
+        public static void WriteCurrentSong(SpotifyPlayerContext currentTrack)
         {
             if (currentTrack?.Item?.Album == null || currentTrack.Item.Artists.IsNullOrEmpty())
             {
