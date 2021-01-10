@@ -5,6 +5,6 @@ namespace SpotNetCore.Models
     public class ParsedCommand
     {
         public string Command { get; set; }
-        public IEnumerable<string> Parameters { get; set; }
+        public IEnumerable<ParsedParameter> Parameters { get; set; }
     }
 }

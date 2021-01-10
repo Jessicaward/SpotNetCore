@@ -32,7 +32,7 @@ namespace SpotNetCore.Implementation
             {
                 var command = ParseCommand(GetUserInput());
 
-                var spotifyCommand = command.Command.ToLower() switch
+                var spotifyCommand = command.Command.Trim().ToLower() switch
                 {
                     "play" => SpotifyCommand.PlayCurrentTrack,
                     "pause" => SpotifyCommand.PauseCurrentTrack,
@@ -121,7 +121,7 @@ namespace SpotNetCore.Implementation
                 {
                     var toggle = command.Parameters.IsNullOrEmpty()
                         ? (bool?) null
-                        : command.Parameters.First() == "on" || command.Parameters.First() == "true";
+                        : command.Parameters.First().Query == "on" || command.Parameters.First().Query == "true";
                     
                     _playerService.ShuffleToggle(toggle);
                 }
@@ -153,11 +153,16 @@ namespace SpotNetCore.Implementation
                 throw new ArgumentException("Input must contain command");
             }
             
-            var split = input.Split(" ");
+            var split = input.Split(new []{"--"}, StringSplitOptions.None);
+		
             return new ParsedCommand
             {
-                Command = split[0],
-                Parameters = split.Skip(1).Take(split.Length - 1)
+                Command = split[0].Trim(),
+                Parameters = split.Skip(1).Select(x => new ParsedParameter()
+                {
+                    Parameter = x.Substring(0, x.IndexOf(' ') + 1).Trim(),
+                    Query = x.Substring(x.IndexOf(' ') + 1).Trim()
+                })
             };
         }
         
