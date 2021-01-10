@@ -31,6 +31,13 @@ This command will skip the current track, playing the next track in the queue. I
 next
 ```
 
+### Previous
+This command will play the previous track. It will then print the current track.
+*NOTE: This will not skip to the start of the current track, regardless of how far through the track you are. Use `restart` for this purpose.*
+```
+previous
+```
+
 ### Help
 This command will display a list of supported SpotNetCore commands.
 ```
