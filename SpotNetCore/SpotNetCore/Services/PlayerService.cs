@@ -81,5 +81,21 @@ namespace SpotNetCore.Services
 
             return JsonSerializer.Deserialize<SpotifyCurrentlyPlaying>(await response.Content.ReadAsStringAsync());
         }
+
+        public async Task PreviousTrack()
+        {
+            using var httpClient = new HttpClient
+            {
+                DefaultRequestHeaders =
+                {
+                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
+                        _authenticationManager.Token.AccessToken)
+                }
+            };
+            
+            var response = await httpClient.PostAsync("https://api.spotify.com/v1/me/player/previous", null);
+
+            response.EnsureSuccessStatusCode();
+        }
     }
 }
