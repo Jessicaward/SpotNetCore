@@ -30,7 +30,7 @@ namespace SpotNetCore.Implementation
         {
             if (currentTrack?.Item?.Album == null || currentTrack.Item.Artists.IsNullOrEmpty())
             {
-                WriteYellow("Now Playing: Nothing");
+                WriteYellow("Nothing is playing right now.");
                 return;
             }
             
@@ -108,11 +108,13 @@ namespace SpotNetCore.Implementation
 
         public static string ReadLine()
         {
+            Console.ForegroundColor = DefaultConsoleColor;
             return Console.ReadLine();
         }
 
         public static void Clear()
         {
+            Console.ForegroundColor = DefaultConsoleColor;
             Console.Clear();
         }
     }

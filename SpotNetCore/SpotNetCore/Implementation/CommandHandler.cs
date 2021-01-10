@@ -47,9 +47,16 @@ namespace SpotNetCore.Implementation
                     "quit" => SpotifyCommand.Exit,
                     "queue" => SpotifyCommand.Queue,
                     "current" => SpotifyCommand.Current,
-                    "clear" => SpotifyCommand.ClearQueue
+                    "clear" => SpotifyCommand.ClearQueue,
+                    _ => SpotifyCommand.Invalid
                 };
 
+                if (spotifyCommand == SpotifyCommand.Invalid)
+                {
+                    Terminal.WriteRed($"{command.Command} is not a valid command.");
+                    HelpManager.DisplayHelp();
+                }
+                
                 if (spotifyCommand == SpotifyCommand.Exit)
                 {
                     exit = true;
