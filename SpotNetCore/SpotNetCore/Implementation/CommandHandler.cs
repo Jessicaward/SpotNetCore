@@ -108,6 +108,13 @@ namespace SpotNetCore.Implementation
                     
                     Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
                 }
+
+                if (spotifyCommand == SpotifyCommand.RestartTrack)
+                {
+                    await _playerService.RestartTrack();
+                    
+                    Terminal.WriteCurrentSong(await _playerService.GetCurrentlyPlaying());
+                }
             }
         }
         

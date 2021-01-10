@@ -97,5 +97,21 @@ namespace SpotNetCore.Services
 
             response.EnsureSuccessStatusCode();
         }
+
+        public async Task RestartTrack()
+        {
+            using var httpClient = new HttpClient()
+            {
+                DefaultRequestHeaders =
+                {
+                    Authorization = new AuthenticationHeaderValue(_authenticationManager.Token.TokenType,
+                        _authenticationManager.Token.AccessToken)
+                }
+            };
+
+            var response = await httpClient.PutAsync("https://api.spotify.com/v1/me/player/seek?position_ms=0", null);
+
+            response.EnsureSuccessStatusCode();
+        }
     }
 }
