@@ -65,6 +65,13 @@ shuffle off
 ```
 shuffle false
 ```
+### Queue
+The queue command allows the user to queue tracks, albums and artists.
+Use the following *required* parameters and queries to queue a specific entity (track, album or artist).
+#### Queue a track
+```
+queue --track everything in its right place
+```
 
 ### Help
 This command will display a list of supported SpotNetCore commands.
