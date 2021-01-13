@@ -141,7 +141,7 @@ namespace SpotNetCore.Implementation
                     if (command.Parameters.Any(x => x.Parameter.ToLower() == "track"))
                     {
                         var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "track");
-                        var tracks = await _searchService.SearchForTrack(parameter.Query);
+                        var tracks = (await _searchService.SearchForTrack(parameter.Query)).ToList();
 
                         if (tracks.IsNullOrEmpty())
                         {
@@ -149,7 +149,11 @@ namespace SpotNetCore.Implementation
                             break;
                         }
 
-                        _playerService.QueueTrack(tracks.First().Uri);
+                        var track = tracks.First();
+                        
+                        await _playerService.QueueTrack(track.Uri);
+                        
+                        Terminal.WriteYellow($"Queueing {track.Name}");
                     }
                 }
             }

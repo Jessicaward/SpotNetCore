@@ -47,7 +47,7 @@ namespace SpotNetCore.Implementation
 
         private string GetAuthorisationUrl(string codeVerifier)
         {
-            var details = new AuthorisationCodeDetails(codeVerifier, "https://localhost:5001/");
+            var details = new AuthorisationCodeDetails(codeVerifier, "http://localhost:5000/");
             var scopes = _config.GetSection("requiredScopes").Get<List<string>>();
             details.AuthorisationUri = BuildAuthorisationUri(_config.GetSection("clientId").Value, details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join(' ', scopes));
             
@@ -94,7 +94,7 @@ namespace SpotNetCore.Implementation
                                             {"code", context.Request.Query["code"].ToString()},
                                             {"client_id", _config.GetSection("clientId").Value},
                                             {"grant_type", "authorization_code"},
-                                            {"redirect_uri", "https://localhost:5001/"},
+                                            {"redirect_uri", "http://localhost:5000/"},
                                             {"code_verifier", _codeVerifier}
                                         }));
                                     

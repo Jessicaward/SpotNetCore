@@ -31,14 +31,14 @@ namespace SpotNetCore.Services
         {
             Dispose(false);
         }
-
+ 
         public async Task<IEnumerable<SpotifyTrack>> SearchForTrack(string query)
         {
             var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/search?q={query}&type=track");
 
             response.EnsureSpotifySuccess();
-
-            return JsonSerializer.Deserialize<IEnumerable<SpotifyTrack>>(await response.Content.ReadAsStringAsync());
+            
+            return (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await response.Content.ReadAsStreamAsync(), new { tracks = new { items = default(IEnumerable<SpotifyTrack>) } }))?.tracks?.items;
         }
 
         private void Dispose(bool disposing)
