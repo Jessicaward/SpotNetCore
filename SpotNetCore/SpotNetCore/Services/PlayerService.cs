@@ -95,7 +95,7 @@ namespace SpotNetCore.Services
                    (currentlyPlayingTrack = await GetPlayerContext()).Item.Id == previousTrack.Item.Id &&
                    currentlyPlayingTrack.ProgressInMs >= previousTrack.ProgressInMs)
             {
-                Thread.Sleep(150);   
+                Thread.Sleep(150);
             }
             return currentlyPlayingTrack;
         }
@@ -110,6 +110,13 @@ namespace SpotNetCore.Services
             response.EnsureSpotifySuccess();
         }
 
+        public async Task QueueTrack(string trackUri)
+        {
+            var response = await _httpClient.PostAsync($"https://api.spotify.com/v1/me/player/queue?uri={trackUri}", null);
+
+            response.EnsureSpotifySuccess();
+        }
+        
         private void Dispose(bool disposing)
         {
             if (!disposing) return;

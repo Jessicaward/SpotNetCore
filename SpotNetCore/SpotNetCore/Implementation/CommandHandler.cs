@@ -13,11 +13,13 @@ namespace SpotNetCore.Implementation
     {
         private readonly AuthenticationManager _authenticationManager;
         private readonly PlayerService _playerService;
+        private readonly SearchService _searchService;
 
-        public CommandHandler(AuthenticationManager authenticationManager, PlayerService playerService)
+        public CommandHandler(AuthenticationManager authenticationManager, PlayerService playerService, SearchService searchService)
         {
             _authenticationManager = authenticationManager;
             _playerService = playerService;
+            _searchService = searchService;
         }
         
         ~CommandHandler()
@@ -32,7 +34,7 @@ namespace SpotNetCore.Implementation
             {
                 var command = ParseCommand(GetUserInput());
 
-                var spotifyCommand = command.Command.ToLower() switch
+                var spotifyCommand = command.Command.Trim().ToLower() switch
                 {
                     "play" => SpotifyCommand.PlayCurrentTrack,
                     "pause" => SpotifyCommand.PauseCurrentTrack,
@@ -121,9 +123,38 @@ namespace SpotNetCore.Implementation
                 {
                     var toggle = command.Parameters.IsNullOrEmpty()
                         ? (bool?) null
-                        : command.Parameters.First() == "on" || command.Parameters.First() == "true";
+                        : command.Parameters.First().Query == "on" || command.Parameters.First().Query == "true";
                     
                     _playerService.ShuffleToggle(toggle);
+                }
+
+                if (spotifyCommand == SpotifyCommand.Queue)
+                {
+                    //At least one parameter is required
+                    if (command.Parameters.IsNullOrEmpty())
+                    {
+                        Terminal.WriteRed($"{command.Command} is not a valid command.");
+                        HelpManager.DisplayHelp();
+                        break;
+                    }
+
+                    if (command.Parameters.Any(x => x.Parameter.ToLower() == "track"))
+                    {
+                        var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "track");
+                        var tracks = (await _searchService.SearchForTrack(parameter.Query)).ToList();
+
+                        if (tracks.IsNullOrEmpty())
+                        {
+                            Terminal.WriteRed($"Could not find track {parameter.Query}");
+                            break;
+                        }
+
+                        var track = tracks.First();
+                        
+                        await _playerService.QueueTrack(track.Uri);
+                        
+                        Terminal.WriteYellow($"Queueing {track.Name}");
+                    }
                 }
             }
         }
@@ -140,11 +171,16 @@ namespace SpotNetCore.Implementation
                 throw new ArgumentException("Input must contain command");
             }
             
-            var split = input.Split(" ");
+            var split = input.Split(new []{"--"}, StringSplitOptions.None);
+		
             return new ParsedCommand
             {
-                Command = split[0],
-                Parameters = split.Skip(1).Take(split.Length - 1)
+                Command = split[0].Trim(),
+                Parameters = split.Skip(1).Select(x => new ParsedParameter()
+                {
+                    Parameter = x.Substring(0, x.IndexOf(' ') + 1).Trim(),
+                    Query = x.Substring(x.IndexOf(' ') + 1).Trim()
+                })
             };
         }
         
