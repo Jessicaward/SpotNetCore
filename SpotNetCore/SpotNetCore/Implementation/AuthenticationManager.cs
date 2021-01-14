@@ -2,38 +2,94 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using SpotNetCore.Models;
 
 namespace SpotNetCore.Implementation
 {
-    public class AuthenticationManager : BackgroundService
+    public class AuthenticationManager : IDisposable
     {
         private readonly IConfigurationRoot _config;
         public static bool IsAuthenticated;
         private static string _codeVerifier;
         private static int _checkRefreshTimeInSeconds; 
         public SpotifyAccessToken Token;
+        private readonly HttpClient _httpClient;
 
         public AuthenticationManager(IConfigurationRoot config)
         {
             _config = config;
             _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
             _checkRefreshTimeInSeconds = 30;
+            _httpClient = new HttpClient();
+        }
+
+        ~AuthenticationManager()
+        {
+            Dispose(false);
         }
 
         public bool IsTokenAboutToExpire() => Token.ExpiresAt <= DateTime.Now.AddSeconds(20);
 
-        public static async Task<SpotifyAccessToken> RequestRefreshedAccessToken()
+        private async Task GetAuthToken()
         {
-            throw new NotImplementedException();
+            await Task.Run(() =>
+            {
+                WebHost.CreateDefaultBuilder(null)
+                    .Configure(y =>
+                    {
+                        y.UseRouting();
+                        y.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/", async context =>
+                            {
+                                await context.Response.CompleteAsync();
+                                
+                                var response = await _httpClient.PostAsync("https://accounts.spotify.com/api/token",
+                                    new FormUrlEncodedContent(new Dictionary<string, string>
+                                    {
+                                        {"code", context.Request.Query["code"].ToString()},
+                                        {"client_id", _config.GetSection("clientId").Value},
+                                        {"grant_type", "authorization_code"},
+                                        {"redirect_uri", "http://localhost:5000/"},
+                                        {"code_verifier", _codeVerifier}
+                                    }));
+                                
+                                response.EnsureSuccessStatusCode();
+
+                                Token = JsonSerializer.Deserialize<SpotifyAccessToken>(await response.Content.ReadAsStringAsync());
+                                
+                                Token.ExpiresAt = DateTime.Now.AddSeconds(Token.ExpiresInSeconds);
+                                IsAuthenticated = true;
+                            });
+                        });
+                    }).Build().RunAsync();
+            });
+        }
+        
+        public async Task RequestRefreshedAccessToken()
+        {
+            var response = await _httpClient.PostAsync("https://accounts.spotify.com/api/token",
+                new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    {"grant_type", "refresh_token"},
+                    {"refresh_token", Token.RefreshToken},
+                    {"client_id", _config.GetSection("clientId").Value}
+                }));
+
+            response.EnsureSuccessStatusCode();
+
+            Token = JsonSerializer.Deserialize<SpotifyAccessToken>(
+                await response.Content.ReadAsStringAsync());
+
+            if (Token != null)
+            {
+                Token.ExpiresAt = DateTime.Now.AddSeconds(Token.ExpiresInSeconds);
+            }
         }
         
         public async Task Authenticate()
@@ -72,80 +128,17 @@ namespace SpotNetCore.Implementation
                    + "&code_challenge=" + codeChallenge + "&state=" + state + "&scope=" + Uri.EscapeUriString(scopes);
         }
         
-        private async Task GetAuthToken()
+        private void Dispose(bool disposing)
         {
-            await Task.Run(() =>
-            {
-                WebHost.CreateDefaultBuilder(null)
-                    .Configure(y =>
-                    {
-                        y.UseRouting();
-                        y.UseEndpoints(endpoints =>
-                        {
-                            endpoints.MapGet("/", async context =>
-                            {
-                                await context.Response.CompleteAsync();
+            if (!disposing) return;
 
-                                using (var httpClient = new HttpClient())
-                                {
-                                    var response = await httpClient.PostAsync("https://accounts.spotify.com/api/token",
-                                        new FormUrlEncodedContent(new Dictionary<string, string>
-                                        {
-                                            {"code", context.Request.Query["code"].ToString()},
-                                            {"client_id", _config.GetSection("clientId").Value},
-                                            {"grant_type", "authorization_code"},
-                                            {"redirect_uri", "http://localhost:5000/"},
-                                            {"code_verifier", _codeVerifier}
-                                        }));
-                                    
-                                    response.EnsureSuccessStatusCode();
-
-                                    Token = JsonSerializer.Deserialize<SpotifyAccessToken>(await response.Content.ReadAsStringAsync());
-                                    
-                                    Token.ExpiresAt = DateTime.Now.AddSeconds(Token.ExpiresInSeconds);
-                                    IsAuthenticated = true;
-                                }
-                            });
-                        });
-                    }).Build().RunAsync();
-            });
+            _httpClient?.Dispose();
         }
         
-        //Refresh Token task
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public void Dispose()
         {
-            //todo: this doesn't run, why?
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                if (Token.ExpiresAt.AddSeconds(_checkRefreshTimeInSeconds) < DateTime.Now)
-                {
-                    //If refresh is not needed, wait for x amount of time.
-                    await Task.Delay(_checkRefreshTimeInSeconds * 1000, stoppingToken);
-                    continue;
-                }
-                
-                //Refresh access token
-                await Task.Run(async () =>
-                {
-                    using (var httpClient = new HttpClient())
-                    {
-                        var response = await httpClient.PostAsync("https://accounts.spotify.com/api/token",
-                            new FormUrlEncodedContent(new Dictionary<string, string>
-                            {
-                                {"grant_type", "refresh_token"},
-                                {"refresh_token", Token.RefreshToken},
-                                {"client_id", _config.GetSection("clientId").Value}
-                            }), stoppingToken);
-
-                        response.EnsureSuccessStatusCode();
-
-                        Token = JsonSerializer.Deserialize<SpotifyAccessToken>(
-                            await response.Content.ReadAsStringAsync());
-
-                        Token.ExpiresAt = DateTime.Now.AddSeconds(Token.ExpiresInSeconds);
-                    }
-                }, stoppingToken);
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
