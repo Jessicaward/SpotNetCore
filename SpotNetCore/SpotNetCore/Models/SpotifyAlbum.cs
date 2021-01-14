@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SpotNetCore.Models
 {
@@ -32,5 +33,7 @@ namespace SpotNetCore.Models
         
         [JsonPropertyName("uri")]
         public string Uri { get; set; }
+
+        public IEnumerable<SpotifyTrack> Tracks { get; set; }
     }
 }

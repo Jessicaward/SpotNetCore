@@ -125,7 +125,7 @@ namespace SpotNetCore.Implementation
                         ? (bool?) null
                         : command.Parameters.First().Query == "on" || command.Parameters.First().Query == "true";
                     
-                    _playerService.ShuffleToggle(toggle);
+                    await _playerService.ShuffleToggle(toggle);
                 }
 
                 if (spotifyCommand == SpotifyCommand.Queue)
@@ -154,6 +154,32 @@ namespace SpotNetCore.Implementation
                         await _playerService.QueueTrack(track.Uri);
                         
                         Terminal.WriteYellow($"Queueing {track.Name}");
+                    }
+
+                    if (command.Parameters.Any(x => x.Parameter.ToLower() == "album"))
+                    {
+                        var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "album");
+                        var album = await _searchService.SearchForAlbum(parameter.Query);
+
+                        if (album == null)
+                        {
+                            Terminal.WriteRed($"Could not find album {parameter.Query}");
+                            break;
+                        }
+
+                        try
+                        {
+                            foreach (var track in album.Tracks)
+                            {
+                                await _playerService.QueueTrack(track.Uri);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Terminal.WriteRed($"Could not queue album. Error: {e}");
+                        }
+                        
+                        Terminal.WriteYellow($"Queueing {album.Name}");
                     }
                 }
             }
