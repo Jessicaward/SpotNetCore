@@ -1,7 +1,7 @@
 ![Twitter Follow](https://img.shields.io/twitter/follow/iamjessicaward?style=social)
 ![GitHub issues](https://img.shields.io/github/issues/jessicaward/spotnetcore)
 ![Lines of code](https://img.shields.io/tokei/lines/github/jessicaward/spotnetcore)
-![Made By Fusion](https://img.shields.io/badge/made%20by-fusion.im-orange)
+![Made By Fusion](https://img.shields.io/badge/made%20by-fusion.co.im-orange)
 
 # SpotNetCore
 Command-line Spotify client written in .NET Core
@@ -71,6 +71,10 @@ Use the following *required* parameters and queries to queue a specific entity (
 #### Queue a track
 ```
 queue --track everything in its right place
+```
+#### Queue an album
+```
+queue --album bonito generation
 ```
 
 ### Help
