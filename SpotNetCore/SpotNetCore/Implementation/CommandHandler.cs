@@ -84,7 +84,7 @@ namespace SpotNetCore.Implementation
                 //The rest of the commands require authentication
                 if (_authenticationManager.Token == null || _authenticationManager.IsTokenAboutToExpire())
                 {
-                    await AuthenticationManager.RequestRefreshedAccessToken();
+                    await _authenticationManager.RequestRefreshedAccessToken();
                 }
 
                 if (spotifyCommand == SpotifyCommand.PlayCurrentTrack)
