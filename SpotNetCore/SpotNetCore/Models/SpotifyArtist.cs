@@ -26,5 +26,8 @@ namespace SpotNetCore.Models
         
         [JsonPropertyName("uri")]
         public string Uri { get; set; }
+
+        //Implementation to support queueing and playing of many options.
+        public IEnumerable<SpotifyTrack> Tracks { get; set; }
     }
 }

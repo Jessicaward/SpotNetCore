@@ -2,7 +2,7 @@ using System;
 
 namespace SpotNetCore
 {
-    public class NoResponseException : Exception
+    public class NoSearchResultException : Exception
     {
         
     }

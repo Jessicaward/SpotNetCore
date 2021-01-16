@@ -63,7 +63,7 @@ namespace SpotNetCore.Services
 
             if (album == null)
             {
-                throw new NoResponseException();
+                throw new NoSearchResultException();
             }
 
             var albumResponse = await _httpClient.GetAsync($"https://api.spotify.com/v1/albums/{album.Id}/tracks");
@@ -76,8 +76,73 @@ namespace SpotNetCore.Services
                 {
                     items = default(IEnumerable<SpotifyTrack>)
                 })).items;
+
+            if (album.Tracks.IsNullOrEmpty())
+            {
+                throw new NoSearchResultException();
+            }
             
             return album;
+        }
+
+        public async Task<SpotifyArtist> SearchForArtist(string query, ArtistOption option)
+        {
+            var metadataResponse = await _httpClient.GetAsync($"https://api.spotify.com/v1/search?q={query}&type=artist");
+
+            metadataResponse.EnsureSpotifySuccess();
+
+            var artist = (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
+                await metadataResponse.Content.ReadAsStreamAsync(),
+                    new
+                    {
+                        artists = new
+                        {
+                            items = default(IEnumerable<SpotifyArtist>)
+                        }
+                    })).artists.items.FirstOrDefault();
+
+            if (artist == null)
+            {
+                throw new NoSearchResultException();
+            }
+
+            var tracks = new List<SpotifyTrack>();
+
+            if (option == ArtistOption.Discography)
+            {
+                //todo: implement
+            }
+
+            if (option == ArtistOption.Popular)
+            {
+                //todo: implement
+            }
+
+            if (option == ArtistOption.Essential)
+            {
+                //todo: implement
+            }
+
+            if (tracks.IsNullOrEmpty())
+            {
+                throw new NoSearchResultException();
+            }
+            
+            artist.Tracks = tracks;
+
+            return artist;
+        }
+
+        public async Task<SpotifyPlaylist> SearchForPlaylist(string query)
+        {
+            //need to create spotify playlist type
+            
+            throw new NotImplementedException();
+        }
+
+        private async Task<SpotifyAlbum> GetDiscographyForArtist()
+        {
+            throw new NotImplementedException();
         }
 
         private void Dispose(bool disposing)
