@@ -226,8 +226,19 @@ namespace SpotNetCore.Implementation
                         {
                             Terminal.WriteRed($"Could not queue artist. Error: {e}");
                         }
-                        
-                        Terminal.WriteYellow($"Queueing {artist.Name}");
+
+                        switch (artistOption)
+                        {
+                            case ArtistOption.Discography:
+                                Terminal.WriteYellow($"Queueing {artist.Name}'s Discography");
+                                break;
+                            case ArtistOption.Popular:
+                                Terminal.WriteYellow($"Queueing {artist.Name}'s top tracks");
+                                break;
+                            case ArtistOption.Essential:
+                                Terminal.WriteYellow($"Queueing 'This Is {artist.Name}'");
+                                break;
+                        }
                     }
                 }
             }

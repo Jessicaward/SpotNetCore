@@ -13,12 +13,14 @@ namespace SpotNetCore.Services
     {
         private readonly ArtistService _artistService;
         private readonly AlbumService _albumService;
+        private readonly PlaylistService _playlistService;
         private readonly HttpClient _httpClient;
 
-        public SearchService(AuthenticationManager authenticationManager, ArtistService artistService, AlbumService albumService)
+        public SearchService(AuthenticationManager authenticationManager, ArtistService artistService, AlbumService albumService, PlaylistService playlistService)
         {
             _artistService = artistService;
             _albumService = albumService;
+            _playlistService = playlistService;
             _httpClient = new HttpClient
             {
                 DefaultRequestHeaders =
@@ -112,8 +114,7 @@ namespace SpotNetCore.Services
 
             if (option == ArtistOption.Discography)
             {
-                var discography = await _artistService.GetDiscographyForArtist(artist.Id);
-                artist.Tracks = await _albumService.GetTracksFromAlbumCollection(discography);
+                artist.Tracks = await _albumService.GetTracksFromAlbumCollection(await _artistService.GetDiscographyForArtist(artist.Id));
             }
 
             if (option == ArtistOption.Popular)
@@ -123,7 +124,14 @@ namespace SpotNetCore.Services
 
             if (option == ArtistOption.Essential)
             {
-                //todo: implement
+                var playlist = await SearchForPlaylist($"This Is {artist.Name}");
+
+                if (playlist == null)
+                {
+                    throw new NoSearchResultException();
+                }
+
+                artist.Tracks = (await _playlistService.GetTracksInPlaylist(playlist.Id));
             }
 
             if (artist.Tracks.IsNullOrEmpty())
@@ -136,9 +144,19 @@ namespace SpotNetCore.Services
 
         public async Task<SpotifyPlaylist> SearchForPlaylist(string query)
         {
-            //need to create spotify playlist type
-            
-            throw new NotImplementedException();
+            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/search?q={query}&type=playlist");
+
+            response.EnsureSpotifySuccess();
+
+            return (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
+                await response.Content.ReadAsStreamAsync(),
+                new
+                {
+                    playlists = new
+                    {
+                        items = default(IEnumerable<SpotifyPlaylist>)
+                    }
+                })).playlists.items.FirstOrDefault();
         }
 
         private void Dispose(bool disposing)

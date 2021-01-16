@@ -21,6 +21,7 @@ namespace SpotNetCore
                 .AddSingleton<SearchService>()
                 .AddSingleton<ArtistService>()
                 .AddSingleton<AlbumService>()
+                .AddSingleton<PlaylistService>()
                 .AddSingleton<IConfigurationRoot>(config => new ConfigurationBuilder()
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                     .Build())
