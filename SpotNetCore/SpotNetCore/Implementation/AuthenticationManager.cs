@@ -15,8 +15,7 @@ namespace SpotNetCore.Implementation
     {
         private readonly IConfigurationRoot _config;
         public static bool IsAuthenticated;
-        private static string _codeVerifier;
-        private static int _checkRefreshTimeInSeconds; 
+        private static string _codeVerifier; 
         public SpotifyAccessToken Token;
         private readonly HttpClient _httpClient;
 
@@ -24,7 +23,6 @@ namespace SpotNetCore.Implementation
         {
             _config = config;
             _codeVerifier = AuthorisationCodeDetails.CreateCodeVerifier();
-            _checkRefreshTimeInSeconds = 30;
             _httpClient = new HttpClient();
         }
 
@@ -96,8 +94,8 @@ namespace SpotNetCore.Implementation
         {
             await GetAuthToken();
             
-            Terminal.WriteLine("Enter this into your browser to authorise this application to use Spotify on your behalf");
-            Terminal.WriteLine(GetAuthorisationUrl(_codeVerifier));
+            Terminal.WriteLine("Please authorise this application to use Spotify on your behalf");
+            SpotifyUrlHelper.RunUrl(GetAuthorisationUrl(_codeVerifier));
             Terminal.ReadLine();
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpotNetCore.Implementation;
@@ -12,7 +11,6 @@ namespace SpotNetCore
         public static async Task Main(string[] args)
         {
             Terminal.Startup();
-            Terminal.ReadLine();
             
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<AuthenticationManager>()
