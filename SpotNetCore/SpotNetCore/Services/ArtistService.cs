@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -40,6 +41,22 @@ namespace SpotNetCore.Services
                 {
                     tracks = default(IEnumerable<SpotifyTrack>)
                 })).tracks;
+        }
+        
+        public async Task<IEnumerable<SpotifyAlbum>> GetDiscographyForArtist(string id)
+        {
+            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/artists/{id}/albums?market=GB&include_groups=album");
+
+            response.EnsureSpotifySuccess();
+
+            var albums =  (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await response.Content.ReadAsStreamAsync(),
+                new
+                {
+                    items = default(IEnumerable<SpotifyAlbum>)
+                })).items;
+
+            //Spotify returns the albums in date order descending. Discography should be played in ascending order.
+            return albums.Reverse();
         }
 
         private void Dispose(bool disposing)

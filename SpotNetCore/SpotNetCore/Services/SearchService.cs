@@ -12,11 +12,13 @@ namespace SpotNetCore.Services
     public class SearchService : IDisposable
     {
         private readonly ArtistService _artistService;
+        private readonly AlbumService _albumService;
         private readonly HttpClient _httpClient;
 
-        public SearchService(AuthenticationManager authenticationManager, ArtistService artistService)
+        public SearchService(AuthenticationManager authenticationManager, ArtistService artistService, AlbumService albumService)
         {
             _artistService = artistService;
+            _albumService = albumService;
             _httpClient = new HttpClient
             {
                 DefaultRequestHeaders =
@@ -110,7 +112,8 @@ namespace SpotNetCore.Services
 
             if (option == ArtistOption.Discography)
             {
-                //todo: implement
+                var discography = await _artistService.GetDiscographyForArtist(artist.Id);
+                artist.Tracks = await _albumService.GetTracksFromAlbumCollection(discography);
             }
 
             if (option == ArtistOption.Popular)
@@ -135,16 +138,6 @@ namespace SpotNetCore.Services
         {
             //need to create spotify playlist type
             
-            throw new NotImplementedException();
-        }
-
-        private async Task<SpotifyAlbum> GetDiscographyForArtist()
-        {
-            throw new NotImplementedException();
-        }
-
-        private async Task<IEnumerable<SpotifyTrack>> GetTracksFromAlbumCollection(IEnumerable<SpotifyAlbum> albums)
-        {
             throw new NotImplementedException();
         }
 
