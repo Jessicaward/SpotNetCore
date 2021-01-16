@@ -77,6 +77,26 @@ queue --track everything in its right place
 queue --album bonito generation
 ```
 
+#### Queue an artist
+When queueing an artist, the user has three options:
+1. Queue the artist's entire discography.
+```
+queue --artist system of a down --discography
+queue --artist system of a down --d
+```
+
+2. Queue the artist's "popular" tracks.
+```
+queue --artist wolf alice --popular
+queue --artist wolf alice --p
+```
+
+3. Queue the artist's "This Is x" playlist.
+```
+queue --artist kendrick lamar --essential
+queue --artist kendrick lamar --e
+```
+
 ### Help
 This command will display a list of supported SpotNetCore commands.
 ```
