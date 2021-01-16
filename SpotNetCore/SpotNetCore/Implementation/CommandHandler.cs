@@ -193,7 +193,7 @@ namespace SpotNetCore.Implementation
                         
                         //todo: verify and test that option will work.
                         var option = command.Parameters.FirstOrDefault(x => x.Parameter.ToLower() != "artist");
-                        var artistOption = option?.Parameter switch
+                        var artistOption = option?.Query switch
                         {
                             "d" => ArtistOption.Discography,
                             "discography" => ArtistOption.Discography,

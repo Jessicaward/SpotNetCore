@@ -11,10 +11,12 @@ namespace SpotNetCore.Services
 {
     public class SearchService : IDisposable
     {
+        private readonly ArtistService _artistService;
         private readonly HttpClient _httpClient;
 
-        public SearchService(AuthenticationManager authenticationManager)
+        public SearchService(AuthenticationManager authenticationManager, ArtistService artistService)
         {
+            _artistService = artistService;
             _httpClient = new HttpClient
             {
                 DefaultRequestHeaders =
@@ -106,8 +108,6 @@ namespace SpotNetCore.Services
                 throw new NoSearchResultException();
             }
 
-            var tracks = new List<SpotifyTrack>();
-
             if (option == ArtistOption.Discography)
             {
                 //todo: implement
@@ -115,7 +115,7 @@ namespace SpotNetCore.Services
 
             if (option == ArtistOption.Popular)
             {
-                //todo: implement
+                artist.Tracks = await _artistService.GetTopTracksForArtist(artist.Id);
             }
 
             if (option == ArtistOption.Essential)
@@ -123,12 +123,10 @@ namespace SpotNetCore.Services
                 //todo: implement
             }
 
-            if (tracks.IsNullOrEmpty())
+            if (artist.Tracks.IsNullOrEmpty())
             {
                 throw new NoSearchResultException();
             }
-            
-            artist.Tracks = tracks;
 
             return artist;
         }
@@ -141,6 +139,11 @@ namespace SpotNetCore.Services
         }
 
         private async Task<SpotifyAlbum> GetDiscographyForArtist()
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task<IEnumerable<SpotifyTrack>> GetTracksFromAlbumCollection(IEnumerable<SpotifyAlbum> albums)
         {
             throw new NotImplementedException();
         }
