@@ -159,9 +159,13 @@ namespace SpotNetCore.Implementation
                     if (command.Parameters.Any(x => x.Parameter.ToLower() == "album"))
                     {
                         var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "album");
-                        var album = await _searchService.SearchForAlbum(parameter.Query);
+                        SpotifyAlbum album;
 
-                        if (album == null)
+                        try
+                        {
+                            album = await _searchService.SearchForAlbum(parameter.Query);
+                        }
+                        catch (NoSearchResultException e)
                         {
                             Terminal.WriteRed($"Could not find album {parameter.Query}");
                             break;
@@ -177,9 +181,64 @@ namespace SpotNetCore.Implementation
                         catch (Exception e)
                         {
                             Terminal.WriteRed($"Could not queue album. Error: {e}");
+                            break;
                         }
                         
                         Terminal.WriteYellow($"Queueing {album.Name}");
+                    }
+
+                    if (command.Parameters.Any(x => x.Parameter.ToLower() == "artist"))
+                    {
+                        var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "artist");
+                        
+                        var option = command.Parameters.FirstOrDefault(x => x.Parameter.ToLower() != "artist");
+                        var artistOption = option?.Query switch
+                        {
+                            "d" => ArtistOption.Discography,
+                            "discography" => ArtistOption.Discography,
+                            "p" => ArtistOption.Popular,
+                            "popular" => ArtistOption.Popular,
+                            "e" => ArtistOption.Essential,
+                            "essential" => ArtistOption.Essential,
+                            _ => ArtistOption.Essential
+                        };
+
+                        SpotifyArtist artist;
+
+                        try
+                        {
+                            artist = await _searchService.SearchForArtist(parameter.Query, artistOption);
+                        }
+                        catch (NoSearchResultException e)
+                        {
+                            Terminal.WriteRed($"Could not find album. Error: {e}");
+                            break;
+                        }
+                        
+                        try
+                        {
+                            foreach (var track in artist.Tracks)
+                            {
+                                await _playerService.QueueTrack(track.Uri);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Terminal.WriteRed($"Could not queue artist. Error: {e}");
+                        }
+
+                        switch (artistOption)
+                        {
+                            case ArtistOption.Discography:
+                                Terminal.WriteYellow($"Queueing {artist.Name}'s Discography");
+                                break;
+                            case ArtistOption.Popular:
+                                Terminal.WriteYellow($"Queueing {artist.Name}'s top tracks");
+                                break;
+                            case ArtistOption.Essential:
+                                Terminal.WriteYellow($"Queueing 'This Is {artist.Name}'");
+                                break;
+                        }
                     }
                 }
             }
