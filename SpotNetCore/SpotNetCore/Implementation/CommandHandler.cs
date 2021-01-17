@@ -186,6 +186,30 @@ namespace SpotNetCore.Implementation
                         
                         Terminal.WriteYellow($"Queueing {album.Name}");
                     }
+
+                    if (command.Parameters.Any(x => x.Parameter.ToLower() == "playlist"))
+                    {
+                        var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "playlist");
+
+                        SpotifyPlaylist playlist;
+                        
+                        try
+                        {
+                            playlist = await _searchService.SearchForPlaylist(parameter.Query);
+                        }
+                        catch (NoSearchResultException e)
+                        {
+                            Terminal.WriteYellow($"Could not find playlist {parameter.Query}");
+                            break;
+                        }
+                        
+                        foreach (var track in playlist.Tracks)
+                        {
+                            await _playerService.QueueTrack(track.Id);
+                        }
+                        
+                        Terminal.WriteYellow($"Queueing {playlist.Name}");
+                    }
                     
                     if (command.Parameters.Any(x => x.Parameter.ToLower() == "artist"))
                     {
