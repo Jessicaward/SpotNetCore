@@ -124,14 +124,7 @@ namespace SpotNetCore.Services
 
             if (option == ArtistOption.Essential)
             {
-                var playlist = await SearchForPlaylist($"This Is {artist.Name}");
-
-                if (playlist == null)
-                {
-                    throw new NoSearchResultException();
-                }
-
-                artist.Tracks = (await _playlistService.GetTracksInPlaylist(playlist.Id));
+                artist.Tracks = (await SearchForPlaylist($"This Is {artist.Name}")).Tracks;
             }
 
             if (artist.Tracks.IsNullOrEmpty())
@@ -148,7 +141,7 @@ namespace SpotNetCore.Services
 
             response.EnsureSpotifySuccess();
 
-            return (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
+            var playlist = (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
                 await response.Content.ReadAsStreamAsync(),
                 new
                 {
@@ -157,6 +150,15 @@ namespace SpotNetCore.Services
                         items = default(IEnumerable<SpotifyPlaylist>)
                     }
                 })).playlists.items.FirstOrDefault();
+
+            if (playlist == null)
+            {
+                throw new NoSearchResultException();
+            }
+            
+            playlist.Tracks = await _playlistService.GetTracksInPlaylist(playlist.Id);
+
+            return playlist;
         }
 
         private void Dispose(bool disposing)

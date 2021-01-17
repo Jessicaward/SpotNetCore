@@ -186,7 +186,7 @@ namespace SpotNetCore.Implementation
                         
                         Terminal.WriteYellow($"Queueing {album.Name}");
                     }
-
+                    
                     if (command.Parameters.Any(x => x.Parameter.ToLower() == "artist"))
                     {
                         var parameter = command.Parameters.First(x => x.Parameter.ToLower() == "artist");
