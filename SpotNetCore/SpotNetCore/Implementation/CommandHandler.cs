@@ -205,7 +205,7 @@ namespace SpotNetCore.Implementation
                         
                         foreach (var track in playlist.Tracks)
                         {
-                            await _playerService.QueueTrack(track.Id);
+                            await _playerService.QueueTrack(track.Uri);
                         }
                         
                         Terminal.WriteYellow($"Queueing {playlist.Name}");

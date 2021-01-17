@@ -103,7 +103,7 @@ namespace SpotNetCore.Implementation
         {
             var details = new AuthorisationCodeDetails(codeVerifier, "http://localhost:5000/");
             var scopes = _config.GetSection("requiredScopes").Get<List<string>>();
-            details.AuthorisationUri = BuildAuthorisationUri(_config.GetSection("clientId").Value, details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join(' ', scopes));
+            details.AuthorisationUri = BuildAuthorisationUri(_config.GetSection("clientId").Value, details.RedirectUri, details.CodeChallenge, "fh82hfosdf8h", string.Join("%20", scopes));
             
             return details.AuthorisationUri;
         }
