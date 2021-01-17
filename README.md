@@ -4,7 +4,7 @@
 ![Made By Fusion](https://img.shields.io/badge/made%20by-fusion.co.im-orange)
 
 # SpotNetCore
-Command-line Spotify client written in .NET Core
+Command-line Spotify controller written in C# using .NET 5.
 
 ## Commands
 ### Play
