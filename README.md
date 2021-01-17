@@ -67,7 +67,7 @@ shuffle false
 ```
 ### Queue
 The queue command allows the user to queue tracks, albums and artists.
-Use the following *required* parameters and queries to queue a specific entity (track, album or artist).
+Use the following *required* parameters and queries to queue a specific entity (track, playlist, album or artist).
 #### Queue a track
 ```
 queue --track everything in its right place
@@ -75,6 +75,11 @@ queue --track everything in its right place
 #### Queue an album
 ```
 queue --album bonito generation
+```
+
+#### Queue a playlist
+```
+queue --playlist cozy autumn vibes
 ```
 
 #### Queue an artist
