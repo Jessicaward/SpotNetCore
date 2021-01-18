@@ -280,8 +280,8 @@ namespace SpotNetCore.Implementation
                 throw new ArgumentException("Input must contain command");
             }
             
-            var split = input.Split(new []{"--"}, StringSplitOptions.None);
-		
+            var split = input.Split(new[] { "-", "--" }, StringSplitOptions.RemoveEmptyEntries);
+
             return new ParsedCommand
             {
                 Command = split[0].Trim(),
