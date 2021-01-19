@@ -9,8 +9,8 @@ Command-line Spotify controller written in C# using .NET 5.
 # Contributions
 | Contribution     | Profile     |
 | :------------- | :----------: |
-|  Owner | ![Jessica Ward](https://github.com/Jessicaward)   |
-| Contributor   | ![srth21](https://github.com/srth21) |
+| Owner  | [![Jessica Ward](https://avatars3.githubusercontent.com/u/13490377?s=460&u=ac337d64310623204b9a5fdb1ea4f5cb1f696fdc&v=4)](https://github.com/Jessicaward) |
+| Contributor | [![srth21](https://avatars2.githubusercontent.com/u/19711975?s=400&u=9394a02a847dc9fcf6ee1f41aca20f6c66a6b261&v=4)](https://github.com/srth21) |
 
 ## Commands
 ### Play
