@@ -6,6 +6,12 @@
 # SpotNetCore
 Command-line Spotify controller written in C# using .NET 5.
 
+# Contributions
+| Contribution     | Profile     |
+| :------------- | :----------: |
+|  Owner | ![Jessica Ward](https://github.com/Jessicaward)   |
+| Contributor   | ![srth21](https://github.com/srth21) |
+
 ## Commands
 ### Play
 This command will play the current track.
