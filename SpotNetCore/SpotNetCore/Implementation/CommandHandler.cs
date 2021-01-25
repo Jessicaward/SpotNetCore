@@ -19,42 +19,13 @@ namespace SpotNetCore.Implementation
         private readonly AuthenticationManager _authenticationManager;
         private readonly PlayerService _playerService;
         private readonly SearchService _searchService;
-        private static readonly List<string> _listOfCommands;
+        private static readonly List<string> _listOfCommands = Commands.GetCommandsList();
 
         public CommandHandler(AuthenticationManager authenticationManager, PlayerService playerService, SearchService searchService)
         {
             _authenticationManager = authenticationManager;
             _playerService = playerService;
-            _searchService = searchService;            
-        }
-
-        static CommandHandler()
-        {
-            // set of commands for autocomplete 
-            _listOfCommands = new List<string>()
-            {
-                "play",
-                "pause",
-                "current",
-                "next",
-                "previous",
-                "restart",
-                "shuffle",
-                "shuffle on",
-                "shuffle off",
-                "shuffle false",
-                "shuffle true",
-                "help",
-                "exit",
-                "close",
-                "quit"
-            };
-            _listOfCommands.Sort();
-        }
-
-        ~CommandHandler()
-        {
-            Dispose(false);
+            _searchService = searchService;
         }
 
         public async Task HandleCommands()
@@ -102,8 +73,8 @@ namespace SpotNetCore.Implementation
 
                 if (spotifyCommand == SpotifyCommand.Help)
                 {
+                    Terminal.Startup();
                     HelpManager.DisplayHelp();
-                    break;
                 }
 
                 if (!AuthenticationManager.IsAuthenticated)
