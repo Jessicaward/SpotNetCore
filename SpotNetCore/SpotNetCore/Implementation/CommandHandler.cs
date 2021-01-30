@@ -27,6 +27,11 @@ namespace SpotNetCore.Implementation
             _playerService = playerService;
             _searchService = searchService;
         }
+        
+        ~CommandHandler()
+        {
+            Dispose(false);
+        }
 
         public async Task HandleCommands()
         {
