@@ -15,6 +15,16 @@ Command-line Spotify controller written in C# using .NET 5.
 | Contributor | wbail [![wbail](https://avatars3.githubusercontent.com/u/50164620?s=100&v=4)](https://github.com/wbail) |
 | Technical Consultant | Prolcons [![Prolcons](https://avatars3.githubusercontent.com/u/50164620?s=100&v=4)](https://github.com/Prolcons) |
 
+## How to contribute
+
+If you'd like to contribute, start by searching through the issues and pull requests to see whether someone else has raised a similar idea or question.
+
+If you don't see your idea listed, and you think it fits into the goals of this guide, do one of the following:
+
+If your contribution is *minor*, such as a typo fix, fork the project, commit your changes and then open a pull request to this repository.
+
+If your contribution is *major*, such as a new guide, start by opening an issue first. That way, other people can weigh in on the discussion before you do any work.
+
 ## Commands
 ### Play
 This command will play the current track.
