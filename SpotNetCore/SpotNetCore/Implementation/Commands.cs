@@ -20,6 +20,7 @@ namespace SpotNetCore.Implementation
                 {"shuffle off", "disables the shuffle mode."},
                 {"shuffle false", "disables the shuffle mode."},
                 {"shuffle true", "enables the shuffle mode."},
+                {"settings", "sets or gets global settings"},
                 {"help", "show this help menu."},
                 {"exit", "closes the application."},
                 {"close", "closes the application."},

@@ -9,27 +9,15 @@ using SpotNetCore.Models;
 
 namespace SpotNetCore.Services
 {
-    public class AlbumService : IDisposable
+    public class AlbumService
     {
-        private readonly HttpClient _httpClient;
+        private readonly SpotifyHttpClient _spotifyHttpClient;
         
-        public AlbumService(AuthenticationManager authenticationManager)
+        public AlbumService(SpotifyHttpClient spotifyHttpClient)
         {
-            _httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(authenticationManager.Token.TokenType,
-                        authenticationManager.Token.AccessToken)
-                }
-            };
+            _spotifyHttpClient = spotifyHttpClient;
         }
 
-        ~AlbumService()
-        {
-            Dispose(false);
-        }
-        
         public async Task<IEnumerable<SpotifyTrack>> GetTracksFromAlbumCollection(IEnumerable<SpotifyAlbum> albums)
         {
             if (albums.IsNullOrEmpty())
@@ -56,32 +44,7 @@ namespace SpotNetCore.Services
 
         public async Task<IEnumerable<SpotifyTrack>> GetTracksForAlbum(string albumId)
         {
-            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/albums/{albumId}/tracks");
-
-            response.EnsureSpotifySuccess();
-
-            return (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
-                await response.Content.ReadAsStreamAsync(),
-                new
-                {
-                    items = default(IEnumerable<SpotifyTrack>)
-                })).items;
-        }
-        
-        private void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
-
-            _httpClient?.Dispose();
-        }
-        
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            return await _spotifyHttpClient.Albums.GetAlbumTracks(albumId);
         }
     }
 }

@@ -12,6 +12,7 @@ namespace SpotNetCore.Implementation
     public class Terminal
     {
         private const ConsoleColor DefaultConsoleColor = ConsoleColor.White;
+        
         public static void Startup()
         {
             WriteDarkGreen(@"
@@ -110,6 +111,11 @@ namespace SpotNetCore.Implementation
         {
             Console.ForegroundColor = DefaultConsoleColor;
             return Console.ReadLine();
+        }
+
+        public static void SetCursorPosition(int left, int top = 0)
+        {
+            Console.SetCursorPosition(AppConstants.Prompt.Length + left, top);
         }
 
         public static void Clear()
