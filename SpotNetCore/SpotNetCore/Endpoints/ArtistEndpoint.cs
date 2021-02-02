@@ -7,7 +7,7 @@ namespace SpotNetCore.Endpoints
 {
     public class ArtistEndpoint
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         public ArtistEndpoint(HttpClient httpClient)
         {

@@ -8,7 +8,7 @@ namespace SpotNetCore.Endpoints
 {
     public class AlbumEndpoint
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         internal AlbumEndpoint(HttpClient httpClient)
         {

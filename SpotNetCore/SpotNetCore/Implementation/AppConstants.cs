@@ -2,7 +2,6 @@
 {
     public class AppConstants
     {
-        public static readonly int CallbackPort = 5000;
         public static readonly string Prompt = "Spotify> ";
         public static readonly string SuccessHtml = @"
             <html style='font-family: sans-serif;'>

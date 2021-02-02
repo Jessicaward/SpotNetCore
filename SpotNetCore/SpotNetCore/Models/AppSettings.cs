@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
-using SpotNetCore.Models;
 
-namespace SpotNetCore.Implementation
+namespace SpotNetCore.Models
 {
     public class AppSettings : INotifyPropertyChanged
     {

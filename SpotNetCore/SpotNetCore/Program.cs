@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using SpotNetCore.Implementation;
+using SpotNetCore.Models;
 using SpotNetCore.Services;
 
 namespace SpotNetCore

@@ -7,7 +7,7 @@ namespace SpotNetCore.Endpoints
 {
     public class PlaylistEndpoint
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         public PlaylistEndpoint(HttpClient httpClient)
         {

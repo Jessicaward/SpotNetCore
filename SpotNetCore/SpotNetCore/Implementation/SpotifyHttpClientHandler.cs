@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using SpotNetCore.Models;
 
 namespace SpotNetCore.Implementation
 {

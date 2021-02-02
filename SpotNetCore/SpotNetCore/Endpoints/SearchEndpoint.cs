@@ -7,7 +7,7 @@ namespace SpotNetCore.Endpoints
 {
     public class SearchEndpoint
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         public SearchEndpoint(HttpClient httpClient)
         {
