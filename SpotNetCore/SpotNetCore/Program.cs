@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using SpotNetCore.Implementation;
 using SpotNetCore.Models;
@@ -14,16 +15,19 @@ namespace SpotNetCore
         public static async Task Main(string[] args)
         {
             var serviceCollection = new ServiceCollection()
-                .AddSingleton(_ =>
+                .AddSingleton(sp =>
                 {
-                    var appSettings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText("appsettings.json"));
+                    var options = new JsonSerializerOptions()
+                    {
+                        WriteIndented = true
+                    };
+                    options.Converters.Add(new SpotifyTokensJsonConverter(sp.GetRequiredService<IDataProtectionProvider>()));
+                    
+                    var appSettings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText("appsettings.json"),options);
                     appSettings!.SpotifyTokens ??= new();
                     appSettings.PropertyChanged += (_, _) =>
                     {
-                        File.WriteAllText("appsettings.json", JsonSerializer.Serialize(appSettings, new()
-                        {
-                            WriteIndented = true
-                        }));
+                        File.WriteAllText("appsettings.json", JsonSerializer.Serialize(appSettings, options));
                     };
                     return appSettings;
                 })
@@ -35,10 +39,14 @@ namespace SpotNetCore
                 .AddSingleton<SearchService>()
                 .AddSingleton<ArtistService>()
                 .AddSingleton<AlbumService>()
-                .AddSingleton<PlaylistService>()
+                .AddSingleton<PlaylistService>();
+            
+            serviceCollection
                 .AddHttpClient<SpotifyHttpClient>(httpClient => { httpClient.BaseAddress = new Uri("https://api.spotify.com/"); })
-                .AddHttpMessageHandler(provider => provider.GetRequiredService<SpotifyHttpClientHandler>())
-                .Services;
+                .AddHttpMessageHandler(provider => provider.GetRequiredService<SpotifyHttpClientHandler>());
+            serviceCollection
+                .AddDataProtection();
+            
             Terminal.Startup();
             
             var serviceProvider = serviceCollection.BuildServiceProvider();
