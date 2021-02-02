@@ -1,177 +1,96 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using SpotNetCore.Implementation;
 using SpotNetCore.Models;
 
 namespace SpotNetCore.Services
 {
-    public class SearchService : IDisposable
+    public class SearchService
     {
         private readonly ArtistService _artistService;
         private readonly AlbumService _albumService;
         private readonly PlaylistService _playlistService;
-        private readonly HttpClient _httpClient;
+        private readonly SpotifyHttpClient _spotifyHttpClient;
 
-        public SearchService(AuthenticationManager authenticationManager, ArtistService artistService, AlbumService albumService, PlaylistService playlistService)
+        public SearchService(SpotifyHttpClient spotifyHttpClient, ArtistService artistService, AlbumService albumService, PlaylistService playlistService)
         {
             _artistService = artistService;
             _albumService = albumService;
             _playlistService = playlistService;
-            _httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(authenticationManager.Token.TokenType,
-                        authenticationManager.Token.AccessToken)
-                }
-            };
+            _spotifyHttpClient = spotifyHttpClient;
         }
 
-        ~SearchService()
-        {
-            Dispose(false);
-        }
- 
         public async Task<IEnumerable<SpotifyTrack>> SearchForTrack(string query)
         {
-            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/search?q={query}&type=track");
-
-            response.EnsureSpotifySuccess();
-            
-            return (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await response.Content.ReadAsStreamAsync(), 
-                new
-                {
-                    tracks = new
-                    {
-                        items = default(IEnumerable<SpotifyTrack>)
-                    }
-                }))?.tracks?.items;
+            return await _spotifyHttpClient.Search.SearchTracks(query);
         }
 
-        public async Task<SpotifyAlbum> SearchForAlbum(string query)
+        public async Task<IEnumerable<SpotifyAlbum>> SearchForAlbum(string query, int limit = 10)
         {
-            var metadataResponse = await _httpClient.GetAsync($"https://api.spotify.com/v1/search?q={query}&type=album");
+            var albums = await _spotifyHttpClient.Search.SearchAlbums(query, limit);
 
-            metadataResponse.EnsureSpotifySuccess();
-            
-            var album = (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await metadataResponse.Content.ReadAsStreamAsync(),
-                new
-                {
-                    albums = new
-                    {
-                        items = default(IEnumerable<SpotifyAlbum>)
-                    } 
-                })).albums.items.FirstOrDefault();
-
-            if (album == null)
+            var spotifyAlbums = new List<SpotifyAlbum>();
+            foreach (var spotifyAlbum in albums)
             {
-                throw new NoSearchResultException();
+                spotifyAlbum.Tracks = await _albumService.GetTracksForAlbum(spotifyAlbum.Id);
+                if (spotifyAlbum.Tracks != null && spotifyAlbum.Tracks.IsNullOrEmpty())
+                    spotifyAlbums.Add(spotifyAlbum);
             }
-
-            var albumResponse = await _httpClient.GetAsync($"https://api.spotify.com/v1/albums/{album.Id}/tracks");
-
-            albumResponse.EnsureSpotifySuccess();
-
-            album.Tracks = (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
-                await albumResponse.Content.ReadAsStreamAsync(),
-                new
-                {
-                    items = default(IEnumerable<SpotifyTrack>)
-                })).items;
-
-            if (album.Tracks.IsNullOrEmpty())
+            
+            if (spotifyAlbums.Count == 0)
             {
                 throw new NoSearchResultException();
             }
             
-            return album;
+            return spotifyAlbums;
         }
 
-        public async Task<SpotifyArtist> SearchForArtist(string query, ArtistOption option)
+        public async Task<IEnumerable<SpotifyArtist>> SearchForArtist(string query, ArtistOption option, int limit = 10)
         {
-            var metadataResponse = await _httpClient.GetAsync($"https://api.spotify.com/v1/search?q={query}&type=artist");
-
-            metadataResponse.EnsureSpotifySuccess();
-
-            var artist = (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
-                await metadataResponse.Content.ReadAsStreamAsync(),
-                    new
-                    {
-                        artists = new
-                        {
-                            items = default(IEnumerable<SpotifyArtist>)
-                        }
-                    })).artists.items.FirstOrDefault();
-
-            if (artist == null)
+            var artists = await _spotifyHttpClient.Search.SearchArtists(query, limit);
+            
+            var spotifyArtists = new List<SpotifyArtist>();
+            foreach (var artist in artists)
             {
-                throw new NoSearchResultException();
-            }
-
-            if (option == ArtistOption.Discography)
-            {
-                artist.Tracks = await _albumService.GetTracksFromAlbumCollection(await _artistService.GetDiscographyForArtist(artist.Id));
-            }
-
-            if (option == ArtistOption.Popular)
-            {
-                artist.Tracks = await _artistService.GetTopTracksForArtist(artist.Id);
-            }
-
-            if (option == ArtistOption.Essential)
-            {
-                artist.Tracks = (await SearchForPlaylist($"This Is {artist.Name}")).Tracks;
-            }
-
-            if (artist.Tracks.IsNullOrEmpty())
-            {
-                throw new NoSearchResultException();
-            }
-
-            return artist;
-        }
-
-        public async Task<SpotifyPlaylist> SearchForPlaylist(string query)
-        {
-            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/search?q={query}&type=playlist");
-
-            response.EnsureSpotifySuccess();
-
-            var playlist = (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(
-                await response.Content.ReadAsStreamAsync(),
-                new
+                artist.Tracks = option switch
                 {
-                    playlists = new
-                    {
-                        items = default(IEnumerable<SpotifyPlaylist>)
-                    }
-                })).playlists.items.FirstOrDefault();
-
-            if (playlist == null)
+                    ArtistOption.Discography => await _albumService.GetTracksFromAlbumCollection(await _artistService.GetDiscographyForArtist(artist.Id)),
+                    ArtistOption.Popular     => await _artistService.GetTopTracksForArtist(artist.Id),
+                    ArtistOption.Essential   => (await SearchForPlaylist($"This Is {artist.Name}")).SelectMany(spotifyPlaylist=>spotifyPlaylist.Tracks),
+                    _                        => artist.Tracks
+                };
+                
+                if (artist.Tracks != null && !artist.Tracks.IsNullOrEmpty())
+                    spotifyArtists.Add(artist);
+            }
+            
+            if (spotifyArtists.Count == 0)
             {
                 throw new NoSearchResultException();
             }
             
-            playlist.Tracks = await _playlistService.GetTracksInPlaylist(playlist.Id);
-
-            return playlist;
+            return spotifyArtists;
         }
 
-        private void Dispose(bool disposing)
+        public async Task<IEnumerable<SpotifyPlaylist>> SearchForPlaylist(string query, int limit = 10)
         {
-            if (!disposing) return;
-
-            _httpClient?.Dispose();
-        }
-        
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            var playlists = await _spotifyHttpClient.Search.SearchPlaylists(query, limit);
+            
+            var spotifyPlaylists = new List<SpotifyPlaylist>();
+            foreach (var playlist in playlists)
+            {
+                playlist.Tracks = await _playlistService.GetTracksInPlaylist(playlist.Id);
+                if (playlist.Tracks != null && !playlist.Tracks.IsNullOrEmpty())
+                    spotifyPlaylists.Add(playlist);
+            }
+            
+            if (spotifyPlaylists.Count == 0)
+            {
+                throw new NoSearchResultException();
+            }
+            
+            return spotifyPlaylists;
         }
     }
 }

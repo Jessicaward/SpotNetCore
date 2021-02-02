@@ -9,70 +9,25 @@ using SpotNetCore.Models;
 
 namespace SpotNetCore.Services
 {
-    public class ArtistService : IDisposable
+    public class ArtistService
     {
-        private readonly HttpClient _httpClient;
+        private readonly SpotifyHttpClient _spotifyHttpClient;
         
-        public ArtistService(AuthenticationManager authenticationManager)
+        public ArtistService(SpotifyHttpClient spotifyHttpClient)
         {
-            _httpClient = new HttpClient
-            {
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue(authenticationManager.Token.TokenType,
-                        authenticationManager.Token.AccessToken)
-                }
-            };
-        }
-        
-        ~ArtistService()
-        {
-            Dispose(false);
+            _spotifyHttpClient = spotifyHttpClient;
         }
 
         public async Task<IEnumerable<SpotifyTrack>> GetTopTracksForArtist(string id)
         {
-            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/artists/{id}/top-tracks?market=GB");
-
-            response.EnsureSpotifySuccess();
-
-            return (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await response.Content.ReadAsStreamAsync(),
-                new
-                {
-                    tracks = default(IEnumerable<SpotifyTrack>)
-                })).tracks;
+            return await _spotifyHttpClient.Artists.GetArtistTopTracks(id);
         }
         
         public async Task<IEnumerable<SpotifyAlbum>> GetDiscographyForArtist(string id)
         {
-            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/artists/{id}/albums?market=GB&include_groups=album");
+            var result = await _spotifyHttpClient.Artists.GetArtistAlbums(id);
 
-            response.EnsureSpotifySuccess();
-
-            var albums =  (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await response.Content.ReadAsStreamAsync(),
-                new
-                {
-                    items = default(IEnumerable<SpotifyAlbum>)
-                })).items;
-
-            //Spotify returns the albums in date order descending. Discography should be played in ascending order.
-            return albums.Reverse();
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!disposing)
-            {
-                return;
-            }
-            
-            _httpClient?.Dispose();
-        }
-        
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            return result.Reverse();
         }
     }
 }
