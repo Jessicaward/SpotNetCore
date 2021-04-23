@@ -32,22 +32,37 @@ namespace SpotNetCore.Services
 
         public async Task<IEnumerable<SpotifyTrack>> GetTracksInPlaylist(string id)
         {
-            var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/playlists/{id}/tracks?market=GB");
+            var tracks = Enumerable.Empty<SpotifyTrack>();
 
-            response.EnsureSpotifySuccess();
+            var offset = 0;
+            var total = Int32.MaxValue;
+            while (offset < total)
+            {
+                var response = await _httpClient.GetAsync($"https://api.spotify.com/v1/playlists/{id}/tracks?market=GB&offset={offset}");
 
-            var items = (await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await response.Content.ReadAsStreamAsync(),
-                new
-                {
-                    items = default(IEnumerable<SpotifyPlaylistTrack>)
-                })).items.ToList();
+                response.EnsureSpotifySuccess();
 
-            if (items.IsNullOrEmpty())
+                var responsePackage = await JsonSerializerExtensions.DeserializeAnonymousTypeAsync(await response.Content.ReadAsStreamAsync(),
+                    new
+                    {
+                        items = default(IEnumerable<SpotifyPlaylistTrack>),
+                        offset = default(int),
+                        total = default(int)
+                    });
+
+                var responseTracks = responsePackage.items.Select(x => x.Track);
+                offset = responsePackage.offset + responseTracks.Count();
+                total = responsePackage.total;
+
+                tracks = tracks.Union(responseTracks);
+            }
+
+            if (tracks.IsNullOrEmpty())
             {
                 throw new NoSearchResultException();
             }
 
-            return items.Select(x => x.Track);
+            return tracks;
         }
 
         private void Dispose(bool disposing)
