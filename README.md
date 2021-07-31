@@ -1,4 +1,3 @@
-![Twitter Follow](https://img.shields.io/twitter/follow/iamjessicaward?style=social)
 ![GitHub issues](https://img.shields.io/github/issues/jessicaward/spotnetcore)
 ![Lines of code](https://img.shields.io/tokei/lines/github/jessicaward/spotnetcore)
 ![Made By Fusion](https://img.shields.io/badge/made%20by-fusion.co.im-orange)
