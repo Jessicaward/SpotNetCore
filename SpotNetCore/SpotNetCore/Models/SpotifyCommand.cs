@@ -19,6 +19,7 @@ namespace SpotNetCore.Models
         Queue,
         ClearQueue,
         Current,
-        Invalid
+        Invalid,
+        Settings
     }
 }

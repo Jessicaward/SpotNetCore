@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using SpotNetCore.Models;
 using SpotNetCore.Services;
 
@@ -14,31 +12,33 @@ namespace SpotNetCore.Implementation
     /// <summary>
     /// Main application loop, parses and executes commands
     /// </summary>
-    public class CommandHandler : IDisposable
+    public class CommandHandler
     {
         private readonly AuthenticationManager _authenticationManager;
         private readonly PlayerService _playerService;
         private readonly SearchService _searchService;
-        private static readonly List<string> _listOfCommands = Commands.GetCommandsList();
+        private readonly AppSettings _appSettings;
+        private static readonly List<string> ListOfCommands = Commands.GetCommandsList();
+        private readonly CyclicLimitedList<String> _commandHistory;
+     
 
-        public CommandHandler(AuthenticationManager authenticationManager, PlayerService playerService, SearchService searchService)
+        public CommandHandler(AuthenticationManager authenticationManager, AppSettings appSettings, PlayerService playerService, SearchService searchService)
         {
+            _appSettings = appSettings;
             _authenticationManager = authenticationManager;
             _playerService = playerService;
             _searchService = searchService;
-        }
-        
-        ~CommandHandler()
-        {
-            Dispose(false);
+            _commandHistory = new();
         }
 
         public async Task HandleCommands()
         {
-            var exit = false;
-            while (!exit)
+            while (true)
             {
-                var command = ParseCommand(GetUserInput());
+                ClearCurrentLine();
+                var input = GetUserInput();
+                var command = ParseCommand(input);
+                _commandHistory.Add(input);
 
                 var spotifyCommand = command.Command.Trim().ToLower() switch
                 {
@@ -61,6 +61,7 @@ namespace SpotNetCore.Implementation
                     "queue" => SpotifyCommand.Queue,
                     "current" => SpotifyCommand.Current,
                     "clear" => SpotifyCommand.ClearQueue,
+                    "settings" => SpotifyCommand.Settings,
                     _ => SpotifyCommand.Invalid
                 };
 
@@ -72,7 +73,6 @@ namespace SpotNetCore.Implementation
 
                 if (spotifyCommand == SpotifyCommand.Exit)
                 {
-                    exit = true;
                     break;
                 }
 
@@ -82,7 +82,7 @@ namespace SpotNetCore.Implementation
                     HelpManager.DisplayHelp();
                 }
 
-                if (!AuthenticationManager.IsAuthenticated)
+                if (!_authenticationManager.IsAuthenticated)
                 {
                     throw new NotAuthenticatedException();
                 }
@@ -134,6 +134,30 @@ namespace SpotNetCore.Implementation
                     await _playerService.ShuffleToggle(toggle);
                 }
 
+                if (spotifyCommand == SpotifyCommand.Settings)
+                {
+                    var option = command.Parameters.FirstOrDefault(x => x.Parameter.ToLower() != "settings");
+            
+                    if (option == null || !Enum.TryParse(option.Parameter.ToLower().FirstCharToUpper(), out SettingOption settingOption))
+                    {
+                        HelpManager.DisplayHelp();
+                        continue;
+                    }
+                    
+                    switch (settingOption)
+                    {
+                      case SettingOption.Market:
+                          if (!option.Query.IsNullOrEmpty())
+                          {
+                              _appSettings.Market = option.Query;
+                              Terminal.WriteLine($"Market set to: {_appSettings.Market}");
+                          }
+                          else
+                            Terminal.WriteLine($"Market: {_appSettings.Market}");
+                          break;
+                    }
+                }
+                
                 if (spotifyCommand == SpotifyCommand.Queue)
                 {
                     //At least one parameter is required
@@ -169,9 +193,9 @@ namespace SpotNetCore.Implementation
 
                         try
                         {
-                            album = await _searchService.SearchForAlbum(parameter.Query);
+                            album = (await _searchService.SearchForAlbum(parameter.Query))?.FirstOrDefault();
                         }
-                        catch (NoSearchResultException e)
+                        catch (NoSearchResultException)
                         {
                             Terminal.WriteRed($"Could not find album {parameter.Query}");
                             break;
@@ -201,9 +225,9 @@ namespace SpotNetCore.Implementation
 
                         try
                         {
-                            playlist = await _searchService.SearchForPlaylist(parameter.Query);
+                            playlist = (await _searchService.SearchForPlaylist(parameter.Query,1))?.FirstOrDefault();
                         }
-                        catch (NoSearchResultException e)
+                        catch (NoSearchResultException)
                         {
                             Terminal.WriteYellow($"Could not find playlist {parameter.Query}");
                             break;
@@ -224,20 +248,20 @@ namespace SpotNetCore.Implementation
                         var option = command.Parameters.FirstOrDefault(x => x.Parameter.ToLower() != "artist");
                         var artistOption = option?.Query switch
                         {
-                            "d" => ArtistOption.Discography,
+                            "d"           => ArtistOption.Discography,
                             "discography" => ArtistOption.Discography,
-                            "p" => ArtistOption.Popular,
-                            "popular" => ArtistOption.Popular,
-                            "e" => ArtistOption.Essential,
-                            "essential" => ArtistOption.Essential,
-                            _ => ArtistOption.Essential
+                            "p"           => ArtistOption.Popular,
+                            "popular"     => ArtistOption.Popular,
+                            "e"           => ArtistOption.Essential,
+                            "essential"   => ArtistOption.Essential,
+                            _             => ArtistOption.Essential
                         };
 
                         SpotifyArtist artist;
 
                         try
                         {
-                            artist = await _searchService.SearchForArtist(parameter.Query, artistOption);
+                            artist = (await _searchService.SearchForArtist(parameter.Query, artistOption, 1))?.FirstOrDefault();
                         }
                         catch (NoSearchResultException e)
                         {
@@ -274,7 +298,7 @@ namespace SpotNetCore.Implementation
             }
         }
 
-        private static string GetUserInput()
+        private string GetUserInput()
         {
             return GetInputWithAutoComplete();
         }
@@ -283,110 +307,133 @@ namespace SpotNetCore.Implementation
         /// Gets User Input By Suggesting the Autocomplete
         /// </summary>
         /// <returns> User input </returns>
-        private static string GetInputWithAutoComplete()
+        private string GetInputWithAutoComplete()
         {
             // to store the user input till now
-            StringBuilder stringBuilder = new StringBuilder();
+            ConsoleInput consoleInput = new ConsoleInput();
 
             // to store the current key entered by the user
-            var userInput = Console.ReadKey(intercept: true);
-
-            // Process input until user presses Enter
-            while (ConsoleKey.Enter != userInput.Key)
+            ConsoleKeyInfo userInput;
+            do
             {
+                userInput = Console.ReadKey(intercept: true);
                 // If Tab
                 if (ConsoleKey.Tab == userInput.Key)
                 {
-                    HandleTabInput(stringBuilder);
+                    HandleTabInput(consoleInput);
                 }
-                // Non Tab Key
+                else if (ConsoleKey.Enter == userInput.Key)
+                {
+                    break;
+                }
                 else
                 {
-                    HandleKeyInput(stringBuilder, userInput);
+                    HandleKeyInput(consoleInput, userInput);
                 }
                 
-                // read next key entered by user
-                userInput = Console.ReadKey(intercept: true);
-            }
-
+            } while (ConsoleKey.Enter != userInput.Key);
             // when user presses enter, move the cursor to the next line
             Console.Write("\n");
 
             // return the user input
-            return stringBuilder.ToString();
+            return consoleInput;
         }
 
         /// <summary>
         /// Processes the user input which is not a tab
         /// </summary>
-        /// <param name="stringBuilder"> string builder which stores the user input till now </param>
+        /// <param name="consoleInput"> Console Input which stores the user input till now </param>
         /// <param name="userInput"> the current user input </param>
-        private static void HandleKeyInput(StringBuilder stringBuilder, ConsoleKeyInfo userInput)
+        private void HandleKeyInput(ConsoleInput consoleInput, ConsoleKeyInfo userInput)
         {
             // current input
-            string currentInput = stringBuilder.ToString();
+            string currentInput = consoleInput;
 
             // Handle backspace
-            if(ConsoleKey.Backspace == userInput.Key )
+            if(ConsoleKey.Backspace == userInput.Key)
             {
                 // if user has pressed backspace, remove the last character from the console output and current input
-                if(currentInput.Length > 0)
+                if(currentInput.Length > 0 && consoleInput.CurrentIndex > 0)
                 {
-                    // remove from current input
-                    stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                    var number = consoleInput.CurrentIndex > 0 ? consoleInput.CurrentIndex - 1 : 0;
+                    consoleInput.Remove(number, 1);
                     
                     // clear the line
                     ClearCurrentLine();
 
                     // remove from string and print on console
-                    currentInput = currentInput.Remove(currentInput.Length - 1);
+                    currentInput = consoleInput;
                     Console.Write(currentInput);
+                    Terminal.SetCursorPosition(number,Console.CursorTop);
                 }
             }
-
-            // if key is space bar, add " " to the input
-            else if(ConsoleKey.Spacebar == userInput.Key)
+            else if (ConsoleKey.UpArrow == userInput.Key)
             {
-                stringBuilder.Append(" ");
-                Console.Write(" ");
+                ClearCurrentLine();
+                consoleInput.Clear();
+                currentInput = _commandHistory.GetPrevious();
+                consoleInput.Append(currentInput);
+                
+                Console.Write($"{currentInput}");
+            } 
+            else if (ConsoleKey.DownArrow == userInput.Key)
+            {
+                ClearCurrentLine();
+                consoleInput.Clear();
+                currentInput = _commandHistory.GetNext();
+                consoleInput.Append(currentInput);
+                
+                Console.Write($"{currentInput}");
             }
-
+            else if (ConsoleKey.LeftArrow == userInput.Key)
+            {
+                var number = consoleInput.CurrentIndex > 0 ? --consoleInput.CurrentIndex : 0;
+                
+                Terminal.SetCursorPosition(number,Console.CursorTop);
+            }
+            else if (ConsoleKey.RightArrow == userInput.Key)
+            {
+                var number = consoleInput.CurrentIndex < consoleInput.Length? ++consoleInput.CurrentIndex : consoleInput.Length;
+                Terminal.SetCursorPosition(number,Console.CursorTop);
+            }
             // all other keys
             else
             {
                 // To Lower is done because when we read a key using Console.ReadKey(),
                 // the uppercase is returned irrespective of the case of the user input.
-                var key = userInput.Key;
-                stringBuilder.Append(key.ToString().ToLower());
-                Console.Write(key.ToString().ToLower());
+                var key = userInput.KeyChar;
+                consoleInput.Insert(key);
+                ClearCurrentLine();
+                Console.Write(consoleInput);
+                Terminal.SetCursorPosition(consoleInput.CurrentIndex,Console.CursorTop);
             }
         }
 
         /// <summary>
         /// Handle Tab Input
         /// </summary>
-        /// <param name="stringBuilder"> String Builder </param>
-        private static void HandleTabInput(StringBuilder stringBuilder)
+        /// <param name="consoleInput"> Console Input </param>
+        private void HandleTabInput(ConsoleInput consoleInput)
         {
             // current input
-            string currentInput = stringBuilder.ToString();
+            string currentInput = consoleInput;
 
             // check if input is already a part of the commands list
-            int indexOfInput = _listOfCommands.IndexOf(currentInput);
+            int indexOfInput = ListOfCommands.IndexOf(currentInput);
 
             // match
-            string match = "";
+            string match;
 
             // if input is a part of the commands list : 
             // then display the next command in alphabetical order
             if(-1 != indexOfInput)
             {
-                match = indexOfInput + 1 < _listOfCommands.Count() ? _listOfCommands[indexOfInput + 1] : "";
+                match = indexOfInput + 1 < ListOfCommands.Count() ? ListOfCommands[indexOfInput + 1] : "";
             }
             // if input isnt in the commands list, find the first match
             else
             {
-                match = _listOfCommands.FirstOrDefault(m => m.StartsWith(currentInput, true, CultureInfo.InvariantCulture));
+                match = ListOfCommands.FirstOrDefault(m => m.StartsWith(currentInput, true, CultureInfo.InvariantCulture));
             }
 
             // no match
@@ -397,11 +444,11 @@ namespace SpotNetCore.Implementation
 
             // clear line and current input
             ClearCurrentLine();
-            stringBuilder.Clear();
+            consoleInput.Clear();
 
             // set line and current input to the current match
             Console.Write(match);
-            stringBuilder.Append(match);
+            consoleInput.Append(match);
         }
 
         /// <summary>
@@ -413,6 +460,7 @@ namespace SpotNetCore.Implementation
             Console.SetCursorPosition(0, Console.CursorTop);
             Console.Write(new string(' ', Console.WindowWidth));
             Console.SetCursorPosition(0, currentLine);
+            Console.Write(AppConstants.Prompt);
         }
 
         private static ParsedCommand ParseCommand(string input)
@@ -423,29 +471,20 @@ namespace SpotNetCore.Implementation
             }
             
             var split = input.Split(new[] { "-", "--" }, StringSplitOptions.RemoveEmptyEntries);
-
+            //var split = input.Split(" ");
             return new ParsedCommand
             {
                 Command = split[0].Trim(),
-                Parameters = split.Skip(1).Select(x => new ParsedParameter()
+                Parameters = split.Skip(1).Select(x =>
                 {
-                    Parameter = x.Substring(0, x.IndexOf(' ') + 1).Trim(),
-                    Query = x.Substring(x.IndexOf(' ') + 1).Trim()
+                    var match = Regex.Match(x.Trim(), "^(?'Key'[A-z0-9]+)(?:[= ](?'Value'.+))?$");
+                    return new ParsedParameter()
+                    {
+                        Parameter = match.Groups["Key"].Value.Trim(),
+                        Query = match.Groups["Value"].Value.Trim()
+                    };
                 })
             };
-        }
-        
-        private void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-
-            _playerService?.Dispose();
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }
